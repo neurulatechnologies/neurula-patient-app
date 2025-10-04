@@ -10,7 +10,7 @@ import { colors, spacing, typography } from '../theme';
 import Home from '../screens/Home';
 import ServicesList from '../screens/ServicesList';
 import DoctorConsultation from '../screens/DoctorConsultation';
-const Booking = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
+import BookingConfirmation from '../screens/BookingConfirmation';
 const Inbox = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
 const Profile = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
 const QuickAction = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
@@ -67,7 +67,7 @@ export default function BottomTabs() {
             tabBar={(props) => <CurvedTabBar {...props} />}
         >
             <Tab.Screen name="Home" component={HomeStackNavigator} />
-            <Tab.Screen name="Booking" component={Booking} />
+            <Tab.Screen name="Booking" component={BookingConfirmation} />
             {/* Hidden route for the center FAB */}
             <Tab.Screen name="QuickAction" component={QuickAction} options={{ tabBarButton: () => null }} />
             <Tab.Screen name="Inbox" component={Inbox} />
