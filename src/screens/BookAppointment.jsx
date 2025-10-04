@@ -15,8 +15,8 @@ import Icon from '../components/Icon';
 import Button from '../components/Button';
 import { colors, spacing, typography } from '../theme';
 
-const DOC_IMG = require('../../assets/Doctor/doctor.png');          // replace with your image
-const BG_WATERMARK = require('../../assets/background.png'); // <- soft bg/bokeh image
+const DOC_IMG = require('../../assets/Doctor/doctor.png');
+const BG_WATERMARK = require('../../assets/background.png');
 
 const TYPE_OPTIONS = ['In-person', 'Online', 'Home Visit'];
 const SLOT_BANDS = ['Morning', 'Afternoon', 'Evening', 'Night'];
@@ -25,11 +25,21 @@ export default function BookAppointment() {
     const navigation = useNavigation();
     const route = useRoute();
 
-    const doctor = route.params?.doctor ?? {
+    // Map doctor data from DoctorConsultation to BookAppointment format
+    const rawDoctor = route.params?.doctor;
+    const doctor = rawDoctor ? {
+        name: rawDoctor.name,
+        specialty: rawDoctor.specialty,
+        desc: rawDoctor.desc || "Experienced medical professional providing comprehensive healthcare services with a focus on patient care and treatment excellence.",
+        fee: rawDoctor.price || rawDoctor.fee,
+        exp: rawDoctor.experience || rawDoctor.exp,
+        rating: rawDoctor.rating,
+        facility: rawDoctor.location || rawDoctor.facility,
+        photo: rawDoctor.avatar || rawDoctor.photo || DOC_IMG,
+    } : {
         name: 'Dr. Michael Chen',
         specialty: 'General Physician',
-        desc:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type",
+        desc: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type",
         fee: 'AED 180',
         exp: '12 years experience',
         rating: '4.7',
@@ -48,12 +58,11 @@ export default function BookAppointment() {
     const calendarData = useMemo(() => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
-        const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         const today = new Date();
 
         const days = [];
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         // Generate all days in the month
         for (let date = 1; date <= lastDay.getDate(); date++) {
@@ -63,7 +72,7 @@ export default function BookAppointment() {
 
             days.push({
                 date: date,
-                day: dayNames[dayOfWeek],
+                day: dayNames[dayOfWeek === 0 ? 6 : dayOfWeek - 1],
                 fullDate: currentDay,
                 disabled: isPast,
                 isToday: currentDay.toDateString() === today.toDateString()
@@ -134,167 +143,183 @@ export default function BookAppointment() {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* --- subtle background watermark --- */}
-            <Image
-                source={BG_WATERMARK}
-                resizeMode="contain"
-                style={styles.watermarkTop}
-                pointerEvents="none"
-            />
-            <Image
-                source={BG_WATERMARK}
-                resizeMode="contain"
-                style={styles.watermarkBottom}
-                pointerEvents="none"
-            />
+            <Image source={BG_WATERMARK} style={styles.watermark} resizeMode="cover" />
 
             {/* Header */}
-            <Header
-                variant="standard"
-                title="Book Appointment"
-                leftIcon="back"
-                onLeftPress={() => navigation.goBack()}
-                onNotificationPress={() => navigation.navigate('Notifications')}
-                onMenuPress={() => navigation.toggleDrawer?.()}
-            />
+
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: spacing.sm, paddingBottom: spacing['3xl'] }}
+                contentContainerStyle={styles.scrollContent}
             >
-                {/* Doctor card */}
-                <View style={styles.docCard}>
-                    <View style={{ flex: 1, paddingRight: spacing.md }}>
-                        <Text style={styles.docName}>{doctor.name}</Text>
-                        <Text style={styles.docSpec}>{doctor.specialty}</Text>
-                        <Text style={styles.docDesc} numberOfLines={3}>{doctor.desc}</Text>
-                        <Text style={styles.fee}>{doctor.fee}</Text>
-                    </View>
-                    <Image source={doctor.photo} style={styles.docImg} resizeMode="cover" />
-                </View>
 
-                {/* Badges */}
-                <View style={styles.badgeRow}>
-                    <Badge icon="💼" label={doctor.exp} />
-                    <Badge icon="⭐" label={doctor.rating} />
-                    <Badge iconComponent={<Icon name="map-pin" size="small" color={colors.textLight} />} label={doctor.facility} grow />
-                </View>
-
-                {/* Select Type */}
-                <Text style={styles.sectionTitle}>Select Type</Text>
-                <Segmented
-                    options={TYPE_OPTIONS}
-                    value={visitType}
-                    onChange={setVisitType}
+                <Header
+                    variant="standard"
+                    title="Book Appointment"
+                    leftIcon="back"
+                    onLeftPress={() => navigation.goBack()}
+                    onNotificationPress={() => navigation.navigate('Notifications')}
+                    onMenuPress={() => navigation.toggleDrawer?.()}
                 />
-
-                {/* Select Date */}
-                <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Select Date</Text>
-                <View style={styles.card}>
-                    <View style={styles.monthRow}>
-                        <Pressable style={styles.chev} onPress={goToPreviousMonth}>
-                            <Icon name="chevron-right" size="small" color={colors.text} style={{ transform: [{ rotate: '180deg' }] }} />
-                        </Pressable>
-                        <Text style={styles.monthTxt}>{currentMonthName}</Text>
-                        <Pressable style={styles.chev} onPress={goToNextMonth}>
-                            <Icon name="chevron-right" size="small" color={colors.text} />
-                        </Pressable>
+                <View style={styles.MainWrapper}>
+                    {/* Doctor card */}
+                    <View style={styles.docCard}>
+                        <View style={styles.docInfo}>
+                            <Text style={styles.docName}>{doctor.name}</Text>
+                            <Text style={styles.docSpec}>{doctor.specialty}</Text>
+                            <Text style={styles.docDesc} numberOfLines={3}>{doctor.desc}</Text>
+                            <Text style={styles.fee}>{doctor.fee}</Text>
+                        </View>
+                        <Image source={doctor.photo} style={styles.docImg} resizeMode="cover" />
                     </View>
 
+                    {/* Badges */}
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.datesScrollContent}
-                        style={styles.datesScroll}
+                        style={styles.badgeScrollView}
+                        contentContainerStyle={styles.badgeScrollContent}
                     >
-                        {calendarData.map(d => {
-                            const isSel = selectedDate.getDate() === d.date && selectedDate.getMonth() === currentDate.getMonth();
-                            return (
-                                <Pressable
-                                    key={d.date}
-                                    disabled={d.disabled}
-                                    onPress={() => setSelectedDate(d.fullDate)}
-                                    style={[
-                                        styles.dayPill,
-                                        isSel && styles.dayPillSelected,
-                                        d.disabled && styles.dayPillDisabled,
-                                        d.isToday && styles.dayPillToday,
-                                    ]}
-                                >
-                                    <Text style={[styles.dayKey, d.disabled && { opacity: 0.5 }]}>{d.day}</Text>
-                                    <Text
-                                        style={[
-                                            styles.dayNum,
-                                            isSel && styles.dayNumSelected,
-                                            d.disabled && { opacity: 0.5 },
-                                            d.isToday && styles.dayNumToday,
-                                        ]}
-                                    >
-                                        {d.date}
-                                    </Text>
-                                </Pressable>
-                            );
-                        })}
+                        <Badge icon="💼" label={doctor.exp} />
+                        <Badge icon="⭐" label={doctor.rating} />
+                        <Badge
+                            iconComponent={<Icon name="map-pin" size="small" color={colors.textLight} />}
+                            label={doctor.facility}
+                        />
                     </ScrollView>
 
-                    <View style={styles.expandDot}>
-                        <Icon name="chevron-right" size="small" color={colors.textLight} style={{ transform: [{ rotate: '90deg' }], opacity: 0.3 }} />
+                    {/* Select Type */}
+                    <Text style={styles.sectionTitle}>Select Type</Text>
+                    <View style={styles.typeCard}>
+                        <Segmented
+                            options={TYPE_OPTIONS}
+                            value={visitType}
+                            onChange={setVisitType}
+                        />
                     </View>
-                </View>
 
-                {/* Select Time Slot */}
-                <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Select Time Slot</Text>
-                <View style={styles.card}>
-                    <Segmented
-                        options={SLOT_BANDS}
-                        value={slotBand}
-                        onChange={(v) => {
-                            setSlotBand(v);
-                            const firstEnabled = timeSlots[v].find(s => !s.disabled);
-                            setSelectedSlot(firstEnabled?.label || null);
-                        }}
-                        compact
-                    />
-                    <View style={styles.slotGrid}>
-                        {timeSlots[slotBand].map(s => {
-                            const sel = s.label === selectedSlot;
-                            return (
-                                <Pressable
-                                    key={s.label}
-                                    disabled={s.disabled}
-                                    onPress={() => setSelectedSlot(s.label)}
-                                    style={[
-                                        styles.slotChip,
-                                        sel && styles.slotChipSelected,
-                                        s.disabled && styles.slotChipDisabled,
-                                    ]}
-                                >
-                                    <Text
+                    {/* Select Date */}
+                    <Text style={styles.sectionTitle}>Select Date</Text>
+                    <View style={styles.dateCard}>
+                        <View style={styles.monthRow}>
+                            <Pressable style={styles.chevButton} onPress={goToPreviousMonth}>
+                                <Icon
+                                    name="chevron-right"
+                                    size="small"
+                                    color={colors.text}
+                                    style={{ transform: [{ rotate: '180deg' }] }}
+                                />
+                            </Pressable>
+                            <Text style={styles.monthText}>{currentMonthName}</Text>
+                            <Pressable style={styles.chevButton} onPress={goToNextMonth}>
+                                <Icon name="chevron-right" size="small" color={colors.text} />
+                            </Pressable>
+                        </View>
+
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={styles.datesScrollContent}
+                            style={styles.datesScroll}
+                        >
+                            {calendarData.map(d => {
+                                const isSel = selectedDate.getDate() === d.date &&
+                                    selectedDate.getMonth() === currentDate.getMonth();
+                                return (
+                                    <Pressable
+                                        key={d.date}
+                                        disabled={d.disabled}
+                                        onPress={() => setSelectedDate(d.fullDate)}
                                         style={[
-                                            styles.slotText,
-                                            sel && styles.slotTextSelected,
-                                            s.disabled && { opacity: 0.5 },
+                                            styles.dayPill,
+                                            isSel && styles.dayPillSelected,
+                                            d.disabled && styles.dayPillDisabled,
+                                            d.isToday && styles.dayPillToday,
                                         ]}
                                     >
-                                        {s.label}
-                                    </Text>
-                                </Pressable>
-                            );
-                        })}
-                    </View>
-                </View>
-                <Button
-                    title="Next"
-                    onPress={onNext}
-                    variant="primary"
-                    size="large"
-                    style={styles.nextButton}
-                />
-            </ScrollView>
+                                        <Text style={[
+                                            styles.dayKey,
+                                            d.disabled && styles.dayKeyDisabled
+                                        ]}>
+                                            {d.day}
+                                        </Text>
+                                        <Text
+                                            style={[
+                                                styles.dayNum,
+                                                isSel && styles.dayNumSelected,
+                                                d.disabled && styles.dayNumDisabled,
+                                                d.isToday && styles.dayNumToday,
+                                            ]}
+                                        >
+                                            {d.date}
+                                        </Text>
+                                    </Pressable>
+                                );
+                            })}
+                        </ScrollView>
 
-            {/* Sticky Next */}
-            {/* <View style={styles.ctaWrap}> */}
-            {/* </View> */}
+                        <View style={styles.expandDot}>
+                            <Icon
+                                name="chevron-right"
+                                size="small"
+                                color={colors.textLight}
+                                style={{ transform: [{ rotate: '90deg' }], opacity: 0.3 }}
+                            />
+                        </View>
+                    </View>
+
+                    {/* Select Time Slot */}
+                    <Text style={styles.sectionTitle}>Select Time Slot</Text>
+                    <View style={styles.timeCard}>
+                        <Segmented
+                            options={SLOT_BANDS}
+                            value={slotBand}
+                            onChange={(v) => {
+                                setSlotBand(v);
+                                const firstEnabled = timeSlots[v].find(s => !s.disabled);
+                                setSelectedSlot(firstEnabled?.label || null);
+                            }}
+                            compact
+                        />
+                        <View style={styles.slotGrid}>
+                            {timeSlots[slotBand].map(s => {
+                                const sel = s.label === selectedSlot;
+                                return (
+                                    <Pressable
+                                        key={s.label}
+                                        disabled={s.disabled}
+                                        onPress={() => setSelectedSlot(s.label)}
+                                        style={[
+                                            styles.slotChip,
+                                            sel && styles.slotChipSelected,
+                                            s.disabled && styles.slotChipDisabled,
+                                        ]}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.slotText,
+                                                sel && styles.slotTextSelected,
+                                                s.disabled && styles.slotTextDisabled,
+                                            ]}
+                                        >
+                                            {s.label}
+                                        </Text>
+                                    </Pressable>
+                                );
+                            })}
+                        </View>
+                    </View>
+
+                    {/* Next Button */}
+                    <Button
+                        title="Next"
+                        onPress={onNext}
+                        variant="primary"
+                        size="large"
+                        style={styles.nextButton}
+                    />
+                </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -303,7 +328,7 @@ export default function BookAppointment() {
 
 function Segmented({ options, value, onChange, compact }) {
     return (
-        <View style={[styles.segment, compact && { padding: 6 }]}>
+        <View style={[styles.segment, compact && styles.segmentCompact]}>
             {options.map(opt => {
                 const active = value === opt;
                 return (
@@ -324,9 +349,9 @@ function Segmented({ options, value, onChange, compact }) {
 
 function Badge({ icon, iconComponent, label, grow }) {
     return (
-        <View style={[styles.badge, grow && { flex: 1 }]}>
+        <View style={[styles.badge, grow && styles.badgeGrow]}>
             {iconComponent ? iconComponent : <Text style={styles.badgeIcon}>{icon}</Text>}
-            <Text style={styles.badgeTxt} numberOfLines={1}>{label}</Text>
+            <Text style={styles.badgeText} numberOfLines={1}>{label}</Text>
         </View>
     );
 }
@@ -334,68 +359,76 @@ function Badge({ icon, iconComponent, label, grow }) {
 /* -------- Styles -------- */
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    watermarkTop: {
-        position: 'absolute',
-        top: -20,
-        right: -60,
-        width: 420,
-        height: 420,
-        opacity: 0.18,
+    container: {
+        backgroundColor: colors.background
     },
-    watermarkBottom: {
+    MainWrapper: {
+        padding: spacing.md
+    },
+    watermark: {
         position: 'absolute',
-        bottom: -40,
-        left: -80,
-        // width: 460,
-        // height: 460,
-        // opacity: 0.12,
+        width: '100%',
+        height: '100%',
+        opacity: 0.3,
+        pointerEvents: 'none',
     },
 
+    scrollContent: {
+        // paddingHorizontal: spacing.md,
+        paddingTop: spacing.sm,
+        paddingBottom: 200,
+    },
 
+    // Doctor Card
     docCard: {
-        marginHorizontal: spacing.screen?.horizontal ?? 20,
         marginTop: spacing.md,
-        padding: spacing.lg,
-        borderRadius: spacing.borderRadius?.xl ?? 20,
-        backgroundColor: colors.glassMorphism ?? 'rgba(255,255,255,0.5)',
-        borderWidth: 1,
-        borderColor: colors.borderGradient ?? 'rgba(255,255,255,0.6)',
+        paddingStart: spacing.md,
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
     },
+
+    docInfo: {
+        flex: 1,
+        paddingRight: spacing.sm,
+        paddingTop: 10
+    },
+
     docName: {
         fontFamily: typography.fontFamily?.bold,
         fontSize: 20,
         color: colors.text,
     },
+
     docSpec: {
         marginTop: 2,
         color: '#8B6AF0',
         fontFamily: typography.fontFamily?.medium,
+        fontSize: 14,
     },
+
     docDesc: {
         marginTop: 6,
-        ...typography.styles?.bodySmall,
+        fontSize: 12,
         color: colors.textLight,
+        lineHeight: 16,
     },
+
     fee: {
         marginTop: spacing.sm,
         fontFamily: typography.fontFamily?.bold,
         fontSize: 16,
         color: colors.text,
     },
+
     docImg: {
-        width: 120, height: 140, borderRadius: 16,
-        backgroundColor: '#eee',
+        width: 155,
+        height: 200,
+        // borderRadius: 16,
+        // backgroundColor: '#eee',
+        resizeMode: 'cover',
     },
 
-    badgeRow: {
-        flexDirection: 'row',
-        gap: 8,
-        marginTop: spacing.sm,
-        marginHorizontal: spacing.screen?.horizontal ?? 20,
-    },
+    // Badges
     badge: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -403,75 +436,143 @@ const styles = StyleSheet.create({
         height: 36,
         backgroundColor: '#FFFFFF',
         borderRadius: 18,
-        shadowColor: '#000', shadowOpacity: 0.06, shadowOffset: { width: 0, height: 6 }, shadowRadius: 10, elevation: 2,
     },
-    badgeIcon: { marginRight: 6, opacity: 0.7 },
-    badgeTxt: { color: colors.text, ...typography.styles?.bodySmall, maxWidth: 180 },
 
+    // Badge ScrollView Styles
+    badgeScrollView: {
+        marginTop: spacing.sm,
+    },
+
+    badgeScrollContent: {
+        paddingHorizontal: spacing.md,
+        gap: 8,
+    },
+
+    badgeIcon: {
+        marginRight: 6,
+        opacity: 0.7,
+    },
+
+    badgeText: {
+        color: colors.text,
+        fontSize: 12,
+        // Removed maxWidth to allow full text display
+    },
+
+    // Section Title
     sectionTitle: {
-        marginHorizontal: spacing.screen?.horizontal ?? 20,
         marginTop: spacing.lg,
         marginBottom: spacing.sm,
-        ...typography.styles?.h4,
+        fontSize: 18,
+        fontFamily: typography.fontFamily?.bold,
         color: colors.text,
     },
 
+    // Type Card (rounded bottom)
+    typeCard: {
+        // borderBottomLeftRadius: 30,
+        // borderBottomRightRadius: 30,
+        backgroundColor: 'rgba(255, 255, 255, 0.4)',
+        backdropFilter: 'blur(30px)',
+        padding: 8,
+        borderRadius: 20
+    },
+
+    // Segmented Control
     segment: {
         flexDirection: 'row',
-        backgroundColor: 'rgba(255,255,255,0.65)',
-        marginHorizontal: spacing.screen?.horizontal ?? 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
         padding: 8,
-        borderRadius: 28,
+        borderRadius: 16,
+        justifyContent: 'space-between',
+        gap: 10
     },
+
+    segmentCompact: {
+        padding: 6,
+        borderRadius: 24,
+    },
+
     segItem: {
         flex: 1,
-        height: 40,
-        borderRadius: 20,
+        paddingVertical: 10,
+        borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
     },
+
     segItemActive: {
         backgroundColor: '#7B4BEB',
+        shadowColor: '#7B4BEB',
+        shadowOpacity: 0.3,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 8,
+        elevation: 4,
     },
+
     segText: {
         fontFamily: typography.fontFamily?.medium,
         color: colors.textLight,
+        fontSize: 12,
     },
+
     segTextActive: {
         color: '#FFFFFF',
     },
 
-    card: {
-        marginHorizontal: spacing.screen?.horizontal ?? 20,
+    // Date Card
+    dateCard: {
         padding: spacing.md,
-        borderRadius: spacing.borderRadius?.xl ?? 20,
-        backgroundColor: colors.glassMorphism ?? 'rgba(255,255,255,0.6)',
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.4)',
+        backdropFilter: 'blur(30px)',
         borderWidth: 1,
-        borderColor: colors.borderGradient ?? 'rgba(255,255,255,0.7)',
+        borderColor: 'rgba(255, 255, 255, 0.7)',
     },
+
+    // Time Card
+    timeCard: {
+        padding: spacing.md,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.4)',
+        backdropFilter: 'blur(30px)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.7)',
+    },
+
+    // Month Navigation
     monthRow: {
-        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         paddingHorizontal: spacing.sm,
     },
-    chev: {
+
+    chevButton: {
         width: 36,
         height: 36,
         borderRadius: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(0,0,0,0.05)',
-    },
-    monthTxt: {
-        ...typography.styles?.h4, color: colors.text,
+        backgroundColor: 'rgba(0, 0, 0, 0.05)',
     },
 
+    monthText: {
+        fontSize: 18,
+        fontFamily: typography.fontFamily?.bold,
+        color: colors.text,
+    },
+
+    // Date Pills
     datesScroll: {
         marginTop: spacing.md,
     },
+
     datesScrollContent: {
         paddingHorizontal: spacing.sm,
         gap: 8,
     },
+
     dayPill: {
         width: 54,
         height: 74,
@@ -480,71 +581,119 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: '#FFFFFF',
         marginHorizontal: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
     },
+
     dayPillSelected: {
-        backgroundColor: '#7B4BEB22',
+        backgroundColor: '#F5EFFF',
         borderWidth: 2,
         borderColor: '#7B4BEB',
     },
+
     dayPillDisabled: {
         backgroundColor: '#F3F3F5',
     },
+
     dayPillToday: {
         backgroundColor: '#E8F5E8',
         borderWidth: 1,
         borderColor: '#4CAF50',
     },
+
     dayKey: {
         fontSize: 12,
         color: colors.textLight,
         marginBottom: 6,
         fontFamily: typography.fontFamily?.medium,
     },
+
+    dayKeyDisabled: {
+        opacity: 0.5,
+    },
+
     dayNum: {
         fontSize: 18,
         color: colors.text,
         fontFamily: typography.fontFamily?.bold,
     },
+
     dayNumSelected: {
         color: '#7B4BEB'
     },
+
+    dayNumDisabled: {
+        opacity: 0.5,
+    },
+
     dayNumToday: {
         color: '#4CAF50',
         fontWeight: '700',
     },
 
-    expandDot: { alignItems: 'center', marginTop: spacing.md },
+    expandDot: {
+        alignItems: 'center',
+        marginTop: spacing.md,
+    },
 
+    // Time Slots
     slotGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 8,
+        justifyContent: 'space-between',
         marginTop: spacing.md,
+        gap: 6,
     },
+
     slotChip: {
-        paddingHorizontal: 14,
-        height: 36,
-        borderRadius: 18,
+        width: '31%', // Ensures exactly 3 chips per row with gaps
+        paddingHorizontal: 8,
+        // height: 40,
+        paddingVertical: 10,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#FFFFFF',
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        elevation: 1,
+        marginBottom: 8,
     },
-    slotChipSelected: { backgroundColor: '#7B4BEB' },
-    slotChipDisabled: { backgroundColor: '#EFEFF4' },
+
+    slotChipSelected: {
+        backgroundColor: '#7B4BEB',
+        shadowColor: '#7B4BEB',
+        shadowOpacity: 0.3,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 8,
+        elevation: 4,
+    },
+
+    slotChipDisabled: {
+        backgroundColor: '#EFEFF4',
+        shadowOpacity: 0,
+        elevation: 0,
+    },
+
     slotText: {
         fontFamily: typography.fontFamily?.medium,
         color: colors.text,
-        fontSize: 13,
+        fontSize: 10,
+        textAlign: 'center',
     },
-    slotTextSelected: { color: '#FFFFFF' },
 
+    slotTextSelected: {
+        color: '#FFFFFF',
+    },
+
+    slotTextDisabled: {
+        opacity: 0.5,
+    },
+
+    // Next Button
     nextButton: {
         marginTop: spacing.lg,
         marginHorizontal: 0,
+        width: '100%',
     },
 });

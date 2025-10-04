@@ -140,12 +140,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     minHeight: spacing.component?.headerHeight || 56,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.40)',
+    // Note: backdrop-filter is not directly supported in React Native
+    // Using shadow and blur simulation for glassmorphism effect
+    shadowColor: 'rgba(255, 255, 255, 0.3)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 15,
+    elevation: 8,
   },
 
   // Home variant styles
   homeContainer: {
     alignItems: 'flex-start',
     paddingTop: spacing.sm,
+    // Inherit glassmorphism from container
     // marginBottom: spacing.xl,
   },
   homeLeft: {
@@ -164,6 +175,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     lineHeight: 32,
     fontWeight: '700',
+    // Enhanced contrast for glassmorphism background
+    textShadowColor: 'rgba(255, 255, 255, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   homeActions: {
     flexDirection: 'row',
@@ -187,6 +202,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
     textAlign: 'center',
+    // Enhanced contrast for glassmorphism background
+    textShadowColor: 'rgba(255, 255, 255, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   subtitle: {
     fontFamily: 'Poppins_400Regular',
@@ -214,16 +233,16 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     borderWidth: 1,
-    borderColor: colors.borderGradient,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.shadowGlass,
+    shadowColor: 'rgba(0, 0, 0, 0.1)',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
   actionIcon: {
     fontSize: 20,
