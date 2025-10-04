@@ -121,7 +121,10 @@ export default function DoctorConsultation() {
                     </View>
                     <View style={styles.doctorFooter}>
                         <Text style={styles.doctorPrice}>{doctor.price}</Text>
-                        <Pressable style={styles.bookButton}>
+                        <Pressable
+                            style={styles.bookButton}
+                            onPress={() => navigation.navigate('BookAppointment', { doctor })}
+                        >
                             <Text style={styles.bookButtonText}>Book Now</Text>
                         </Pressable>
                     </View>

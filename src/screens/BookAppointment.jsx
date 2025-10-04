@@ -1,0 +1,550 @@
+// File: BookAppointment.jsx
+import React, { useMemo, useState } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    Image,
+    Pressable,
+    ScrollView,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import Header from '../components/Header';
+import Icon from '../components/Icon';
+import Button from '../components/Button';
+import { colors, spacing, typography } from '../theme';
+
+const DOC_IMG = require('../../assets/Doctor/doctor.png');          // replace with your image
+const BG_WATERMARK = require('../../assets/background.png'); // <- soft bg/bokeh image
+
+const TYPE_OPTIONS = ['In-person', 'Online', 'Home Visit'];
+const SLOT_BANDS = ['Morning', 'Afternoon', 'Evening', 'Night'];
+
+export default function BookAppointment() {
+    const navigation = useNavigation();
+    const route = useRoute();
+
+    const doctor = route.params?.doctor ?? {
+        name: 'Dr. Michael Chen',
+        specialty: 'General Physician',
+        desc:
+            "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type",
+        fee: 'AED 180',
+        exp: '12 years experience',
+        rating: '4.7',
+        facility: 'Jumeirah Medical Center',
+        photo: DOC_IMG,
+    };
+
+    const [visitType, setVisitType] = useState(TYPE_OPTIONS[0]);
+    const [slotBand, setSlotBand] = useState(SLOT_BANDS[0]);
+
+    // Calendar state management
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
+    // Generate calendar dates for current month
+    const calendarData = useMemo(() => {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const today = new Date();
+
+        const days = [];
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        // Generate all days in the month
+        for (let date = 1; date <= lastDay.getDate(); date++) {
+            const currentDay = new Date(year, month, date);
+            const dayOfWeek = currentDay.getDay();
+            const isPast = currentDay < today.setHours(0, 0, 0, 0);
+
+            days.push({
+                date: date,
+                day: dayNames[dayOfWeek],
+                fullDate: currentDay,
+                disabled: isPast,
+                isToday: currentDay.toDateString() === today.toDateString()
+            });
+        }
+
+        return days;
+    }, [currentDate]);
+
+    // Get month name
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+    const currentMonthName = monthNames[currentDate.getMonth()];
+
+    const timeSlots = useMemo(
+        () => ({
+            Morning: [
+                { label: '9:00 - 9:30' },
+                { label: '9:30 - 10:00', selected: true },
+                { label: '10:00 - 10:30', disabled: true },
+                { label: '10:30 - 11:00', disabled: true },
+                { label: '11:00 - 11:30' },
+                { label: '11:30 - 12:00' },
+            ],
+            Afternoon: [
+                { label: '12:00 - 12:30' },
+                { label: '12:30 - 1:00' },
+                { label: '1:00 - 1:30' },
+                { label: '1:30 - 2:00' },
+            ],
+            Evening: [
+                { label: '5:00 - 5:30' },
+                { label: '5:30 - 6:00' },
+                { label: '6:00 - 6:30' },
+            ],
+            Night: [
+                { label: '8:00 - 8:30' },
+                { label: '8:30 - 9:00' },
+            ],
+        }),
+        []
+    );
+    const [selectedSlot, setSelectedSlot] = useState('9:30 - 10:00');
+
+    // Month navigation functions
+    const goToPreviousMonth = () => {
+        const newDate = new Date(currentDate);
+        newDate.setMonth(currentDate.getMonth() - 1);
+        setCurrentDate(newDate);
+    };
+
+    const goToNextMonth = () => {
+        const newDate = new Date(currentDate);
+        newDate.setMonth(currentDate.getMonth() + 1);
+        setCurrentDate(newDate);
+    };
+
+    const onNext = () =>
+        navigation.navigate('BookingConfirmation', {
+            patient: route.params?.patient,
+            doctor,
+            schedule: {
+                date: `${currentMonthName} ${selectedDate.getDate()}`,
+                time: selectedSlot,
+                type: visitType,
+            },
+        });
+
+    return (
+        <SafeAreaView style={styles.container}>
+            {/* --- subtle background watermark --- */}
+            <Image
+                source={BG_WATERMARK}
+                resizeMode="contain"
+                style={styles.watermarkTop}
+                pointerEvents="none"
+            />
+            <Image
+                source={BG_WATERMARK}
+                resizeMode="contain"
+                style={styles.watermarkBottom}
+                pointerEvents="none"
+            />
+
+            {/* Header */}
+            <Header
+                variant="standard"
+                title="Book Appointment"
+                leftIcon="back"
+                onLeftPress={() => navigation.goBack()}
+                onNotificationPress={() => navigation.navigate('Notifications')}
+                onMenuPress={() => navigation.toggleDrawer?.()}
+            />
+
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: spacing.sm, paddingBottom: spacing['3xl'] }}
+            >
+                {/* Doctor card */}
+                <View style={styles.docCard}>
+                    <View style={{ flex: 1, paddingRight: spacing.md }}>
+                        <Text style={styles.docName}>{doctor.name}</Text>
+                        <Text style={styles.docSpec}>{doctor.specialty}</Text>
+                        <Text style={styles.docDesc} numberOfLines={3}>{doctor.desc}</Text>
+                        <Text style={styles.fee}>{doctor.fee}</Text>
+                    </View>
+                    <Image source={doctor.photo} style={styles.docImg} resizeMode="cover" />
+                </View>
+
+                {/* Badges */}
+                <View style={styles.badgeRow}>
+                    <Badge icon="💼" label={doctor.exp} />
+                    <Badge icon="⭐" label={doctor.rating} />
+                    <Badge iconComponent={<Icon name="map-pin" size="small" color={colors.textLight} />} label={doctor.facility} grow />
+                </View>
+
+                {/* Select Type */}
+                <Text style={styles.sectionTitle}>Select Type</Text>
+                <Segmented
+                    options={TYPE_OPTIONS}
+                    value={visitType}
+                    onChange={setVisitType}
+                />
+
+                {/* Select Date */}
+                <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Select Date</Text>
+                <View style={styles.card}>
+                    <View style={styles.monthRow}>
+                        <Pressable style={styles.chev} onPress={goToPreviousMonth}>
+                            <Icon name="chevron-right" size="small" color={colors.text} style={{ transform: [{ rotate: '180deg' }] }} />
+                        </Pressable>
+                        <Text style={styles.monthTxt}>{currentMonthName}</Text>
+                        <Pressable style={styles.chev} onPress={goToNextMonth}>
+                            <Icon name="chevron-right" size="small" color={colors.text} />
+                        </Pressable>
+                    </View>
+
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.datesScrollContent}
+                        style={styles.datesScroll}
+                    >
+                        {calendarData.map(d => {
+                            const isSel = selectedDate.getDate() === d.date && selectedDate.getMonth() === currentDate.getMonth();
+                            return (
+                                <Pressable
+                                    key={d.date}
+                                    disabled={d.disabled}
+                                    onPress={() => setSelectedDate(d.fullDate)}
+                                    style={[
+                                        styles.dayPill,
+                                        isSel && styles.dayPillSelected,
+                                        d.disabled && styles.dayPillDisabled,
+                                        d.isToday && styles.dayPillToday,
+                                    ]}
+                                >
+                                    <Text style={[styles.dayKey, d.disabled && { opacity: 0.5 }]}>{d.day}</Text>
+                                    <Text
+                                        style={[
+                                            styles.dayNum,
+                                            isSel && styles.dayNumSelected,
+                                            d.disabled && { opacity: 0.5 },
+                                            d.isToday && styles.dayNumToday,
+                                        ]}
+                                    >
+                                        {d.date}
+                                    </Text>
+                                </Pressable>
+                            );
+                        })}
+                    </ScrollView>
+
+                    <View style={styles.expandDot}>
+                        <Icon name="chevron-right" size="small" color={colors.textLight} style={{ transform: [{ rotate: '90deg' }], opacity: 0.3 }} />
+                    </View>
+                </View>
+
+                {/* Select Time Slot */}
+                <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Select Time Slot</Text>
+                <View style={styles.card}>
+                    <Segmented
+                        options={SLOT_BANDS}
+                        value={slotBand}
+                        onChange={(v) => {
+                            setSlotBand(v);
+                            const firstEnabled = timeSlots[v].find(s => !s.disabled);
+                            setSelectedSlot(firstEnabled?.label || null);
+                        }}
+                        compact
+                    />
+                    <View style={styles.slotGrid}>
+                        {timeSlots[slotBand].map(s => {
+                            const sel = s.label === selectedSlot;
+                            return (
+                                <Pressable
+                                    key={s.label}
+                                    disabled={s.disabled}
+                                    onPress={() => setSelectedSlot(s.label)}
+                                    style={[
+                                        styles.slotChip,
+                                        sel && styles.slotChipSelected,
+                                        s.disabled && styles.slotChipDisabled,
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.slotText,
+                                            sel && styles.slotTextSelected,
+                                            s.disabled && { opacity: 0.5 },
+                                        ]}
+                                    >
+                                        {s.label}
+                                    </Text>
+                                </Pressable>
+                            );
+                        })}
+                    </View>
+                </View>
+                <Button
+                    title="Next"
+                    onPress={onNext}
+                    variant="primary"
+                    size="large"
+                    style={styles.nextButton}
+                />
+            </ScrollView>
+
+            {/* Sticky Next */}
+            {/* <View style={styles.ctaWrap}> */}
+            {/* </View> */}
+        </SafeAreaView>
+    );
+}
+
+/* -------- Small UI pieces -------- */
+
+function Segmented({ options, value, onChange, compact }) {
+    return (
+        <View style={[styles.segment, compact && { padding: 6 }]}>
+            {options.map(opt => {
+                const active = value === opt;
+                return (
+                    <Pressable
+                        key={opt}
+                        onPress={() => onChange(opt)}
+                        style={[styles.segItem, active && styles.segItemActive]}
+                    >
+                        <Text style={[styles.segText, active && styles.segTextActive]}>
+                            {opt}
+                        </Text>
+                    </Pressable>
+                );
+            })}
+        </View>
+    );
+}
+
+function Badge({ icon, iconComponent, label, grow }) {
+    return (
+        <View style={[styles.badge, grow && { flex: 1 }]}>
+            {iconComponent ? iconComponent : <Text style={styles.badgeIcon}>{icon}</Text>}
+            <Text style={styles.badgeTxt} numberOfLines={1}>{label}</Text>
+        </View>
+    );
+}
+
+/* -------- Styles -------- */
+
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    watermarkTop: {
+        position: 'absolute',
+        top: -20,
+        right: -60,
+        width: 420,
+        height: 420,
+        opacity: 0.18,
+    },
+    watermarkBottom: {
+        position: 'absolute',
+        bottom: -40,
+        left: -80,
+        // width: 460,
+        // height: 460,
+        // opacity: 0.12,
+    },
+
+
+    docCard: {
+        marginHorizontal: spacing.screen?.horizontal ?? 20,
+        marginTop: spacing.md,
+        padding: spacing.lg,
+        borderRadius: spacing.borderRadius?.xl ?? 20,
+        backgroundColor: colors.glassMorphism ?? 'rgba(255,255,255,0.5)',
+        borderWidth: 1,
+        borderColor: colors.borderGradient ?? 'rgba(255,255,255,0.6)',
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    docName: {
+        fontFamily: typography.fontFamily?.bold,
+        fontSize: 20,
+        color: colors.text,
+    },
+    docSpec: {
+        marginTop: 2,
+        color: '#8B6AF0',
+        fontFamily: typography.fontFamily?.medium,
+    },
+    docDesc: {
+        marginTop: 6,
+        ...typography.styles?.bodySmall,
+        color: colors.textLight,
+    },
+    fee: {
+        marginTop: spacing.sm,
+        fontFamily: typography.fontFamily?.bold,
+        fontSize: 16,
+        color: colors.text,
+    },
+    docImg: {
+        width: 120, height: 140, borderRadius: 16,
+        backgroundColor: '#eee',
+    },
+
+    badgeRow: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: spacing.sm,
+        marginHorizontal: spacing.screen?.horizontal ?? 20,
+    },
+    badge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        height: 36,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 18,
+        shadowColor: '#000', shadowOpacity: 0.06, shadowOffset: { width: 0, height: 6 }, shadowRadius: 10, elevation: 2,
+    },
+    badgeIcon: { marginRight: 6, opacity: 0.7 },
+    badgeTxt: { color: colors.text, ...typography.styles?.bodySmall, maxWidth: 180 },
+
+    sectionTitle: {
+        marginHorizontal: spacing.screen?.horizontal ?? 20,
+        marginTop: spacing.lg,
+        marginBottom: spacing.sm,
+        ...typography.styles?.h4,
+        color: colors.text,
+    },
+
+    segment: {
+        flexDirection: 'row',
+        backgroundColor: 'rgba(255,255,255,0.65)',
+        marginHorizontal: spacing.screen?.horizontal ?? 20,
+        padding: 8,
+        borderRadius: 28,
+    },
+    segItem: {
+        flex: 1,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    segItemActive: {
+        backgroundColor: '#7B4BEB',
+    },
+    segText: {
+        fontFamily: typography.fontFamily?.medium,
+        color: colors.textLight,
+    },
+    segTextActive: {
+        color: '#FFFFFF',
+    },
+
+    card: {
+        marginHorizontal: spacing.screen?.horizontal ?? 20,
+        padding: spacing.md,
+        borderRadius: spacing.borderRadius?.xl ?? 20,
+        backgroundColor: colors.glassMorphism ?? 'rgba(255,255,255,0.6)',
+        borderWidth: 1,
+        borderColor: colors.borderGradient ?? 'rgba(255,255,255,0.7)',
+    },
+    monthRow: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        paddingHorizontal: spacing.sm,
+    },
+    chev: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.05)',
+    },
+    monthTxt: {
+        ...typography.styles?.h4, color: colors.text,
+    },
+
+    datesScroll: {
+        marginTop: spacing.md,
+    },
+    datesScrollContent: {
+        paddingHorizontal: spacing.sm,
+        gap: 8,
+    },
+    dayPill: {
+        width: 54,
+        height: 74,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#FFFFFF',
+        marginHorizontal: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    dayPillSelected: {
+        backgroundColor: '#7B4BEB22',
+        borderWidth: 2,
+        borderColor: '#7B4BEB',
+    },
+    dayPillDisabled: {
+        backgroundColor: '#F3F3F5',
+    },
+    dayPillToday: {
+        backgroundColor: '#E8F5E8',
+        borderWidth: 1,
+        borderColor: '#4CAF50',
+    },
+    dayKey: {
+        fontSize: 12,
+        color: colors.textLight,
+        marginBottom: 6,
+        fontFamily: typography.fontFamily?.medium,
+    },
+    dayNum: {
+        fontSize: 18,
+        color: colors.text,
+        fontFamily: typography.fontFamily?.bold,
+    },
+    dayNumSelected: {
+        color: '#7B4BEB'
+    },
+    dayNumToday: {
+        color: '#4CAF50',
+        fontWeight: '700',
+    },
+
+    expandDot: { alignItems: 'center', marginTop: spacing.md },
+
+    slotGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: spacing.md,
+    },
+    slotChip: {
+        paddingHorizontal: 14,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#FFFFFF',
+    },
+    slotChipSelected: { backgroundColor: '#7B4BEB' },
+    slotChipDisabled: { backgroundColor: '#EFEFF4' },
+    slotText: {
+        fontFamily: typography.fontFamily?.medium,
+        color: colors.text,
+        fontSize: 13,
+    },
+    slotTextSelected: { color: '#FFFFFF' },
+
+    nextButton: {
+        marginTop: spacing.lg,
+        marginHorizontal: 0,
+    },
+});
