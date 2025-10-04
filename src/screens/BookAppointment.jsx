@@ -62,7 +62,7 @@ export default function BookAppointment() {
         const today = new Date();
 
         const days = [];
-        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         // Generate all days in the month
         for (let date = 1; date <= lastDay.getDate(); date++) {
@@ -72,7 +72,7 @@ export default function BookAppointment() {
 
             days.push({
                 date: date,
-                day: dayNames[dayOfWeek === 0 ? 6 : dayOfWeek - 1],
+                day: dayNames[dayOfWeek],
                 fullDate: currentDay,
                 disabled: isPast,
                 isToday: currentDay.toDateString() === today.toDateString()
@@ -86,6 +86,7 @@ export default function BookAppointment() {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'];
     const currentMonthName = monthNames[currentDate.getMonth()];
+
 
     const timeSlots = useMemo(
         () => ({
@@ -216,15 +217,17 @@ export default function BookAppointment() {
                             </Pressable>
                         </View>
 
+                        {/* Date Scroll */}
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={styles.datesScrollContent}
-                            style={styles.datesScroll}
+                            style={styles.dateScroll}
+                            contentContainerStyle={styles.dateScrollContent}
                         >
                             {calendarData.map(d => {
                                 const isSel = selectedDate.getDate() === d.date &&
                                     selectedDate.getMonth() === currentDate.getMonth();
+                                const isSelectedToday = isSel && d.isToday;
                                 return (
                                     <Pressable
                                         key={d.date}
@@ -235,6 +238,7 @@ export default function BookAppointment() {
                                             isSel && styles.dayPillSelected,
                                             d.disabled && styles.dayPillDisabled,
                                             d.isToday && styles.dayPillToday,
+                                            isSelectedToday && styles.dayPillSelectedToday,
                                         ]}
                                     >
                                         <Text style={[
@@ -249,6 +253,7 @@ export default function BookAppointment() {
                                                 isSel && styles.dayNumSelected,
                                                 d.disabled && styles.dayNumDisabled,
                                                 d.isToday && styles.dayNumToday,
+                                                isSelectedToday && styles.dayNumSelectedToday,
                                             ]}
                                         >
                                             {d.date}
@@ -563,24 +568,28 @@ const styles = StyleSheet.create({
         color: colors.text,
     },
 
-    // Date Pills
-    datesScroll: {
+    // Date Scroll
+    dateScroll: {
         marginTop: spacing.md,
     },
 
-    datesScrollContent: {
+    dateScrollContent: {
         paddingHorizontal: spacing.sm,
-        gap: 8,
+        gap: spacing.sm,
     },
 
     dayPill: {
-        width: 54,
-        height: 74,
-        borderRadius: 16,
+        width: 64,
+        height: 70,
+        borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#FFFFFF',
-        marginHorizontal: 4,
+        //     shadowColor: '#000',
+        //     shadowOffset: { width: 0, height: 2 },
+        //     shadowOpacity: 0.05,
+        //     shadowRadius: 4,
+        //     elevation: 1,
     },
 
     dayPillSelected: {
@@ -599,10 +608,16 @@ const styles = StyleSheet.create({
         borderColor: '#4CAF50',
     },
 
+    dayPillSelectedToday: {
+        backgroundColor: '#F5EFFF',
+        borderWidth: 2,
+        borderColor: '#4CAF50',
+    },
+
     dayKey: {
         fontSize: 12,
         color: colors.textLight,
-        marginBottom: 6,
+        marginBottom: 4,
         fontFamily: typography.fontFamily?.medium,
     },
 
@@ -611,7 +626,7 @@ const styles = StyleSheet.create({
     },
 
     dayNum: {
-        fontSize: 18,
+        fontSize: 16,
         color: colors.text,
         fontFamily: typography.fontFamily?.bold,
     },
@@ -626,6 +641,11 @@ const styles = StyleSheet.create({
 
     dayNumToday: {
         color: '#4CAF50',
+        fontWeight: '700',
+    },
+
+    dayNumSelectedToday: {
+        color: '#7B4BEB',
         fontWeight: '700',
     },
 
