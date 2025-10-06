@@ -319,13 +319,15 @@ export default function BookAppointment() {
                     </View>
 
                     {/* Next Button */}
-                    <Button
-                        title="Next"
-                        onPress={onNext}
-                        variant="primary"
-                        size="large"
-                        style={styles.nextButton}
-                    />
+                    <View style={styles.buttonWrapper}>
+                        <Button
+                            title="Next"
+                            onPress={onNext}
+                            variant="primary"
+                            size="large"
+                            style={styles.nextButton}
+                        />
+                    </View>
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -371,7 +373,9 @@ const styles = StyleSheet.create({
         backgroundColor: colors.background
     },
     MainWrapper: {
-        padding: spacing.md
+        // padding: spacing.md
+        // justifyContent: 'center',
+        // alignItems: 'center'
     },
     watermark: {
         position: 'absolute',
@@ -466,13 +470,11 @@ const styles = StyleSheet.create({
     parentCard: {
         marginTop: spacing.lg,
         padding: spacing.md,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 24,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 3,
+        backgroundColor: 'rgba(255, 255, 255, 0.40)',
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
     },
 
     // Section Title
@@ -486,7 +488,11 @@ const styles = StyleSheet.create({
 
     // Type Card (removed individual card styling)
     typeCard: {
-        padding: 4,
+        padding: spacing.sm,
+        borderRadius: 30,
+        backgroundColor: 'rgba(255, 255, 255, 0.40)',
+        borderWidth: 1,
+        borderColor: '#FFFFFF',
     },
 
     // Segmented Control
@@ -494,20 +500,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         backgroundColor: '#F5F5F7',
         padding: 4,
-        borderRadius: 12,
+        borderRadius: 30,
         justifyContent: 'space-between',
         gap: 6
     },
 
     segmentCompact: {
         padding: 4,
-        borderRadius: 12,
+        borderRadius: 30,
     },
 
     segItem: {
         flex: 1,
         paddingVertical: 10,
-        borderRadius: 10,
+        borderRadius: 30,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -533,12 +539,21 @@ const styles = StyleSheet.create({
 
     // Date Card (removed individual card styling)
     dateCard: {
-        paddingVertical: spacing.sm,
+        padding: spacing.md,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.40)',
+        borderWidth: 1,
+        borderColor: '#FFFFFF',
     },
 
     // Time Card (removed individual card styling)
     timeCard: {
+        padding: spacing.sm,
         paddingTop: spacing.sm,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.40)',
+        borderWidth: 1,
+        borderColor: '#FFFFFF',
     },
 
     // Month Navigation
@@ -647,10 +662,10 @@ const styles = StyleSheet.create({
     },
 
     slotChip: {
-        width: '31%',
-        paddingHorizontal: 8,
-        paddingVertical: 12,
-        borderRadius: 12,
+        // width: '31%',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 30,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#F5F5F7',
@@ -673,7 +688,7 @@ const styles = StyleSheet.create({
     slotText: {
         fontFamily: typography.fontFamily?.medium,
         color: colors.text,
-        fontSize: 11,
+        fontSize: 12,
         textAlign: 'center',
     },
 
@@ -689,6 +704,15 @@ const styles = StyleSheet.create({
     nextButton: {
         marginTop: spacing.lg,
         marginHorizontal: 0,
-        width: '100%',
+        width: '90%',
+        // flex: 1,
+        // backgroundColor: 'red',
+        // justifyContent: 'center',
+        // alignItems: 'center'
     },
+    buttonWrapper: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%'
+    }
 });
