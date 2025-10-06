@@ -62,7 +62,7 @@ export default function BookAppointment() {
         const today = new Date();
 
         const days = [];
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
         // Generate all days in the month
         for (let date = 1; date <= lastDay.getDate(); date++) {
@@ -70,9 +70,12 @@ export default function BookAppointment() {
             const dayOfWeek = currentDay.getDay();
             const isPast = currentDay < today.setHours(0, 0, 0, 0);
 
+            // Adjust day index (0=Sunday -> 6, 1=Monday -> 0, etc.)
+            const adjustedDayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
             days.push({
                 date: date,
-                day: dayNames[dayOfWeek],
+                day: dayNames[adjustedDayIndex],
                 fullDate: currentDay,
                 disabled: isPast,
                 isToday: currentDay.toDateString() === today.toDateString()
@@ -189,129 +192,129 @@ export default function BookAppointment() {
                         />
                     </ScrollView>
 
-                    {/* Select Type */}
-                    <Text style={styles.sectionTitle}>Select Type</Text>
-                    <View style={styles.typeCard}>
-                        <Segmented
-                            options={TYPE_OPTIONS}
-                            value={visitType}
-                            onChange={setVisitType}
-                        />
-                    </View>
+                    {/* Parent White Card containing all three sections */}
+                    <View style={styles.parentCard}>
+                        {/* Select Type */}
+                        <Text style={styles.sectionTitle}>Select Type</Text>
+                        <View style={styles.typeCard}>
+                            <Segmented
+                                options={TYPE_OPTIONS}
+                                value={visitType}
+                                onChange={setVisitType}
+                            />
+                        </View>
 
-                    {/* Select Date */}
-                    <Text style={styles.sectionTitle}>Select Date</Text>
-                    <View style={styles.dateCard}>
-                        <View style={styles.monthRow}>
-                            <Pressable style={styles.chevButton} onPress={goToPreviousMonth}>
+                        {/* Select Date */}
+                        <Text style={styles.sectionTitle}>Select Date</Text>
+                        <View style={styles.dateCard}>
+                            <View style={styles.monthRow}>
+                                <Pressable style={styles.chevButton} onPress={goToPreviousMonth}>
+                                    <Icon
+                                        name="chevron-right"
+                                        size="small"
+                                        color={colors.text}
+                                        style={{ transform: [{ rotate: '180deg' }] }}
+                                    />
+                                </Pressable>
+                                <Text style={styles.monthText}>{currentMonthName}</Text>
+                                <Pressable style={styles.chevButton} onPress={goToNextMonth}>
+                                    <Icon name="chevron-right" size="small" color={colors.text} />
+                                </Pressable>
+                            </View>
+
+                            {/* Date Scroll */}
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                style={styles.dateScroll}
+                                contentContainerStyle={styles.dateScrollContent}
+                            >
+                                {calendarData.map(d => {
+                                    const isSel = selectedDate.getDate() === d.date &&
+                                        selectedDate.getMonth() === currentDate.getMonth();
+                                    const isSelectedToday = isSel && d.isToday;
+                                    return (
+                                        <Pressable
+                                            key={d.date}
+                                            disabled={d.disabled}
+                                            onPress={() => setSelectedDate(d.fullDate)}
+                                            style={[
+                                                styles.dayPill,
+                                                isSel && styles.dayPillSelected,
+                                                d.disabled && styles.dayPillDisabled,
+                                            ]}
+                                        >
+                                            <Text style={[
+                                                styles.dayKey,
+                                                isSel && styles.dayKeySelected,
+                                                d.disabled && styles.dayKeyDisabled
+                                            ]}>
+                                                {d.day}
+                                            </Text>
+                                            <Text
+                                                style={[
+                                                    styles.dayNum,
+                                                    isSel && styles.dayNumSelected,
+                                                    d.disabled && styles.dayNumDisabled,
+                                                ]}
+                                            >
+                                                {d.date}
+                                            </Text>
+                                        </Pressable>
+                                    );
+                                })}
+                            </ScrollView>
+
+                            <View style={styles.expandDot}>
                                 <Icon
                                     name="chevron-right"
                                     size="small"
-                                    color={colors.text}
-                                    style={{ transform: [{ rotate: '180deg' }] }}
+                                    color={colors.textLight}
+                                    style={{ transform: [{ rotate: '90deg' }], opacity: 0.3 }}
                                 />
-                            </Pressable>
-                            <Text style={styles.monthText}>{currentMonthName}</Text>
-                            <Pressable style={styles.chevButton} onPress={goToNextMonth}>
-                                <Icon name="chevron-right" size="small" color={colors.text} />
-                            </Pressable>
+                            </View>
                         </View>
 
-                        {/* Date Scroll */}
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            style={styles.dateScroll}
-                            contentContainerStyle={styles.dateScrollContent}
-                        >
-                            {calendarData.map(d => {
-                                const isSel = selectedDate.getDate() === d.date &&
-                                    selectedDate.getMonth() === currentDate.getMonth();
-                                const isSelectedToday = isSel && d.isToday;
-                                return (
-                                    <Pressable
-                                        key={d.date}
-                                        disabled={d.disabled}
-                                        onPress={() => setSelectedDate(d.fullDate)}
-                                        style={[
-                                            styles.dayPill,
-                                            isSel && styles.dayPillSelected,
-                                            d.disabled && styles.dayPillDisabled,
-                                            d.isToday && styles.dayPillToday,
-                                            isSelectedToday && styles.dayPillSelectedToday,
-                                        ]}
-                                    >
-                                        <Text style={[
-                                            styles.dayKey,
-                                            d.disabled && styles.dayKeyDisabled
-                                        ]}>
-                                            {d.day}
-                                        </Text>
-                                        <Text
-                                            style={[
-                                                styles.dayNum,
-                                                isSel && styles.dayNumSelected,
-                                                d.disabled && styles.dayNumDisabled,
-                                                d.isToday && styles.dayNumToday,
-                                                isSelectedToday && styles.dayNumSelectedToday,
-                                            ]}
-                                        >
-                                            {d.date}
-                                        </Text>
-                                    </Pressable>
-                                );
-                            })}
-                        </ScrollView>
-
-                        <View style={styles.expandDot}>
-                            <Icon
-                                name="chevron-right"
-                                size="small"
-                                color={colors.textLight}
-                                style={{ transform: [{ rotate: '90deg' }], opacity: 0.3 }}
+                        {/* Select Time Slot */}
+                        <Text style={styles.sectionTitle}>Select Time Slot</Text>
+                        <View style={styles.timeCard}>
+                            <Segmented
+                                options={SLOT_BANDS}
+                                value={slotBand}
+                                onChange={(v) => {
+                                    setSlotBand(v);
+                                    const firstEnabled = timeSlots[v].find(s => !s.disabled);
+                                    setSelectedSlot(firstEnabled?.label || null);
+                                }}
+                                compact
                             />
-                        </View>
-                    </View>
-
-                    {/* Select Time Slot */}
-                    <Text style={styles.sectionTitle}>Select Time Slot</Text>
-                    <View style={styles.timeCard}>
-                        <Segmented
-                            options={SLOT_BANDS}
-                            value={slotBand}
-                            onChange={(v) => {
-                                setSlotBand(v);
-                                const firstEnabled = timeSlots[v].find(s => !s.disabled);
-                                setSelectedSlot(firstEnabled?.label || null);
-                            }}
-                            compact
-                        />
-                        <View style={styles.slotGrid}>
-                            {timeSlots[slotBand].map(s => {
-                                const sel = s.label === selectedSlot;
-                                return (
-                                    <Pressable
-                                        key={s.label}
-                                        disabled={s.disabled}
-                                        onPress={() => setSelectedSlot(s.label)}
-                                        style={[
-                                            styles.slotChip,
-                                            sel && styles.slotChipSelected,
-                                            s.disabled && styles.slotChipDisabled,
-                                        ]}
-                                    >
-                                        <Text
+                            <View style={styles.slotGrid}>
+                                {timeSlots[slotBand].map(s => {
+                                    const sel = s.label === selectedSlot;
+                                    return (
+                                        <Pressable
+                                            key={s.label}
+                                            disabled={s.disabled}
+                                            onPress={() => setSelectedSlot(s.label)}
                                             style={[
-                                                styles.slotText,
-                                                sel && styles.slotTextSelected,
-                                                s.disabled && styles.slotTextDisabled,
+                                                styles.slotChip,
+                                                sel && styles.slotChipSelected,
+                                                s.disabled && styles.slotChipDisabled,
                                             ]}
                                         >
-                                            {s.label}
-                                        </Text>
-                                    </Pressable>
-                                );
-                            })}
+                                            <Text
+                                                style={[
+                                                    styles.slotText,
+                                                    sel && styles.slotTextSelected,
+                                                    s.disabled && styles.slotTextDisabled,
+                                                ]}
+                                            >
+                                                {s.label}
+                                            </Text>
+                                        </Pressable>
+                                    );
+                                })}
+                            </View>
                         </View>
                     </View>
 
@@ -379,9 +382,8 @@ const styles = StyleSheet.create({
     },
 
     scrollContent: {
-        // paddingHorizontal: spacing.md,
         paddingTop: spacing.sm,
-        paddingBottom: 200,
+        paddingBottom: 100,
     },
 
     // Doctor Card
@@ -428,8 +430,6 @@ const styles = StyleSheet.create({
     docImg: {
         width: 155,
         height: 200,
-        // borderRadius: 16,
-        // backgroundColor: '#eee',
         resizeMode: 'cover',
     },
 
@@ -443,7 +443,6 @@ const styles = StyleSheet.create({
         borderRadius: 18,
     },
 
-    // Badge ScrollView Styles
     badgeScrollView: {
         marginTop: spacing.sm,
     },
@@ -461,47 +460,54 @@ const styles = StyleSheet.create({
     badgeText: {
         color: colors.text,
         fontSize: 12,
-        // Removed maxWidth to allow full text display
+    },
+
+    // Parent Card - NEW
+    parentCard: {
+        marginTop: spacing.lg,
+        padding: spacing.md,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 3,
     },
 
     // Section Title
     sectionTitle: {
-        marginTop: spacing.lg,
+        marginTop: spacing.md,
         marginBottom: spacing.sm,
-        fontSize: 18,
+        fontSize: 16,
         fontFamily: typography.fontFamily?.bold,
         color: colors.text,
     },
 
-    // Type Card (rounded bottom)
+    // Type Card (removed individual card styling)
     typeCard: {
-        // borderBottomLeftRadius: 30,
-        // borderBottomRightRadius: 30,
-        backgroundColor: 'rgba(255, 255, 255, 0.4)',
-        backdropFilter: 'blur(30px)',
-        padding: 8,
-        borderRadius: 20
+        padding: 4,
     },
 
     // Segmented Control
     segment: {
         flexDirection: 'row',
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
-        padding: 8,
-        borderRadius: 16,
+        backgroundColor: '#F5F5F7',
+        padding: 4,
+        borderRadius: 12,
         justifyContent: 'space-between',
-        gap: 10
+        gap: 6
     },
 
     segmentCompact: {
-        padding: 6,
-        borderRadius: 24,
+        padding: 4,
+        borderRadius: 12,
     },
 
     segItem: {
         flex: 1,
         paddingVertical: 10,
-        borderRadius: 8,
+        borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -525,24 +531,14 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
     },
 
-    // Date Card
+    // Date Card (removed individual card styling)
     dateCard: {
-        padding: spacing.md,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.4)',
-        backdropFilter: 'blur(30px)',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.7)',
+        paddingVertical: spacing.sm,
     },
 
-    // Time Card
+    // Time Card (removed individual card styling)
     timeCard: {
-        padding: spacing.md,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.4)',
-        backdropFilter: 'blur(30px)',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.7)',
+        paddingTop: spacing.sm,
     },
 
     // Month Navigation
@@ -551,107 +547,94 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: spacing.sm,
+        marginBottom: spacing.md,
     },
 
     chevButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.05)',
     },
 
     monthText: {
-        fontSize: 18,
+        fontSize: 16,
         fontFamily: typography.fontFamily?.bold,
         color: colors.text,
     },
 
     // Date Scroll
     dateScroll: {
-        marginTop: spacing.md,
+        marginTop: spacing.sm,
     },
 
     dateScrollContent: {
-        paddingHorizontal: spacing.sm,
-        gap: spacing.sm,
+        paddingHorizontal: 4,
+        gap: 12,
     },
 
     dayPill: {
-        width: 64,
-        height: 70,
-        borderRadius: 14,
+        minWidth: 52,
+        paddingVertical: 14,
+        paddingHorizontal: 8,
+        borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#FFFFFF',
-        //     shadowColor: '#000',
-        //     shadowOffset: { width: 0, height: 2 },
-        //     shadowOpacity: 0.05,
-        //     shadowRadius: 4,
-        //     elevation: 1,
+        backgroundColor: 'transparent',
     },
 
     dayPillSelected: {
-        backgroundColor: '#F5EFFF',
-        borderWidth: 2,
-        borderColor: '#7B4BEB',
+        backgroundColor: '#7B4BEB',
+        shadowColor: '#7B4BEB',
+        shadowOpacity: 0.25,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 12,
+        elevation: 4,
     },
 
     dayPillDisabled: {
-        backgroundColor: '#F3F3F5',
-    },
-
-    dayPillToday: {
-        backgroundColor: '#E8F5E8',
-        borderWidth: 1,
-        borderColor: '#4CAF50',
-    },
-
-    dayPillSelectedToday: {
-        backgroundColor: '#F5EFFF',
-        borderWidth: 2,
-        borderColor: '#4CAF50',
+        backgroundColor: 'transparent',
+        opacity: 0.3,
     },
 
     dayKey: {
-        fontSize: 12,
-        color: colors.textLight,
-        marginBottom: 4,
-        fontFamily: typography.fontFamily?.medium,
+        fontSize: 13,
+        color: '#666666',
+        marginBottom: 6,
+        fontFamily: typography.fontFamily?.regular,
+        fontWeight: '400',
+    },
+
+    dayKeySelected: {
+        color: '#FFFFFF',
+        fontWeight: '500',
     },
 
     dayKeyDisabled: {
-        opacity: 0.5,
+        color: '#666666',
     },
 
     dayNum: {
-        fontSize: 16,
-        color: colors.text,
-        fontFamily: typography.fontFamily?.bold,
+        fontSize: 18,
+        color: '#1A1A1A',
+        fontFamily: typography.fontFamily?.semibold,
+        fontWeight: '600',
     },
 
     dayNumSelected: {
-        color: '#7B4BEB'
+        color: '#FFFFFF',
+        fontWeight: '700',
     },
 
     dayNumDisabled: {
-        opacity: 0.5,
-    },
-
-    dayNumToday: {
-        color: '#4CAF50',
-        fontWeight: '700',
-    },
-
-    dayNumSelectedToday: {
-        color: '#7B4BEB',
-        fontWeight: '700',
+        color: '#1A1A1A',
     },
 
     expandDot: {
         alignItems: 'center',
-        marginTop: spacing.md,
+        marginTop: spacing.sm,
     },
 
     // Time Slots
@@ -660,24 +643,17 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         marginTop: spacing.md,
-        gap: 6,
+        gap: 8,
     },
 
     slotChip: {
-        width: '31%', // Ensures exactly 3 chips per row with gaps
+        width: '31%',
         paddingHorizontal: 8,
-        // height: 40,
-        paddingVertical: 10,
-        borderRadius: 20,
+        paddingVertical: 12,
+        borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#FFFFFF',
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 4,
-        elevation: 1,
-        marginBottom: 8,
+        backgroundColor: '#F5F5F7',
     },
 
     slotChipSelected: {
@@ -690,15 +666,14 @@ const styles = StyleSheet.create({
     },
 
     slotChipDisabled: {
-        backgroundColor: '#EFEFF4',
-        shadowOpacity: 0,
-        elevation: 0,
+        backgroundColor: '#F5F5F7',
+        opacity: 0.4,
     },
 
     slotText: {
         fontFamily: typography.fontFamily?.medium,
         color: colors.text,
-        fontSize: 10,
+        fontSize: 11,
         textAlign: 'center',
     },
 
