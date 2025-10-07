@@ -135,7 +135,7 @@ export default function BookAppointment() {
     };
 
     const onNext = () =>
-        navigation.navigate('BookingConfirmation', {
+        navigation.navigate('AppointmentPatientDetails', {
             patient: route.params?.patient,
             doctor,
             schedule: {
