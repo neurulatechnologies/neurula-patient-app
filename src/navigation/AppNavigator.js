@@ -21,14 +21,14 @@ export default function AppNavigator() {
           headerShown: false,
         }}
       >
-        {/* <Stack.Screen name="FirstScreen" component={FirstScreen} />
+        <Stack.Screen name="FirstScreen" component={FirstScreen} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="CreateAccount" component={CreateAccount} />
         <Stack.Screen name="ScanEmiratesID" component={ScanEmiratesID} />
         <Stack.Screen name="ScanPassport" component={ScanPassport} />
         <Stack.Screen name="ManualEntry" component={ManualEntry} />
         <Stack.Screen name="OtpVerification" component={OtpVerification} />
-        <Stack.Screen name="BookingConfirmation" component={BookingConfirmation} /> */}
+        <Stack.Screen name="BookingConfirmation" component={BookingConfirmation} />
         <Stack.Screen name="BottomNav" component={BottomTabs} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
