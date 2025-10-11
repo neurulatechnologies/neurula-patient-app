@@ -134,7 +134,7 @@ export default function AppointmentPatientDetails() {
 
     const onNext = () => {
         if (!validate()) return;
-        navigation.navigate('BookingConfirmation', {
+        navigation.navigate('ConfirmBooking', {
             patient: {
                 name: form.fullName,
                 email: form.email,
