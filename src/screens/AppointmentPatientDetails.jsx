@@ -133,7 +133,8 @@ export default function AppointmentPatientDetails() {
     const [errors, setErrors] = useState({});
 
     const onNext = () => {
-        if (!validate()) return;
+        // TODO: Uncomment validation when needed
+        // if (!validate()) return;
         navigation.navigate('ConfirmBooking', {
             patient: {
                 name: form.fullName,

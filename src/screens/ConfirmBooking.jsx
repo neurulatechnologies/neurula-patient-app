@@ -2,8 +2,8 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { colors, spacing, typography } from '../theme';
+import { useNavigation } from '@react-navigation/native';
+import { spacing } from '../theme';
 import Button from '../components/Button';
 import Header from '../components/Header';
 
@@ -12,21 +12,25 @@ const DOCTOR_IMAGE = require('../../assets/Doctor/doctor.png');
 
 export default function ConfirmBooking() {
     const navigation = useNavigation();
-    const { params } = useRoute();
+    // const { params } = useRoute();
 
-    const doctor = params?.doctor ?? {
+    // TODO: Uncomment when implementing navigation params
+    // const doctor = params?.doctor ?? {
+    const doctor = {
         name: 'Dr. Michael Chen',
         specialty: 'General Physician',
         avatar: DOCTOR_IMAGE,
     };
 
-    const schedule = params?.schedule ?? {
+    // const schedule = params?.schedule ?? {
+    const schedule = {
         dateLabel: 'Tue, July 28th 2025',
         timeLabel: '07:00 PM',
         locationLabel: 'Jumeirah Medical Center',
     };
 
-    const patient = params?.patient ?? {
+    // const patient = params?.patient ?? {
+    const patient = {
         name: 'James Collins',
         gender: 'Male',
         dob: '5 May 1998',
@@ -127,13 +131,17 @@ export default function ConfirmBooking() {
                             <Text style={styles.followTime}>{patient.followupTime}</Text>
                         </View>
                     </View>
-                </View>
-            </ScrollView>
 
-            {/* Sticky Footer Button */}
-            <View style={styles.footer}>
-                <Button title="Next" onPress={handleNext} />
-            </View>
+                    <Button
+                        title="Next"
+                        onPress={handleNext}
+                        variant="primary"
+                        size="large"
+                        style={{ marginTop: spacing['3xl'] }}
+                    />
+                </View>
+
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -285,13 +293,5 @@ const styles = StyleSheet.create({
     followTime: {
         fontSize: 13,
         color: '#7A8199'
-    },
-
-    /* Footer */
-    footer: {
-        position: 'absolute',
-        left: 16,
-        right: 16,
-        bottom: 16
     },
 });
