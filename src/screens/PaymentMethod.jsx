@@ -84,7 +84,10 @@ export default function PaymentMethod() {
 
                             {/* Add New Button for Bank Card */}
                             {method.hasAction && selectedMethod === method.id && (
-                                <Pressable style={styles.addButton}>
+                                <Pressable
+                                    style={styles.addButton}
+                                    onPress={() => navigation.navigate('AddNewCard')}
+                                >
                                     <Text style={styles.addButtonText}>+Add New</Text>
                                 </Pressable>
                             )}

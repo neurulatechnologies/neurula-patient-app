@@ -15,6 +15,7 @@ import BookAppointment from '../screens/BookAppointment';
 import AppointmentPatientDetails from '../screens/AppointmentPatientDetails';
 import ConfirmBooking from '../screens/ConfirmBooking';
 import PaymentMethod from '../screens/PaymentMethod';
+import AddNewCard from '../screens/AddNewCard';
 const Inbox = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
 const Profile = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
 const QuickAction = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
@@ -60,6 +61,7 @@ function HomeStackNavigator() {
             <HomeStack.Screen name="AppointmentPatientDetails" component={AppointmentPatientDetails} />
             <HomeStack.Screen name="ConfirmBooking" component={ConfirmBooking} />
             <HomeStack.Screen name="PaymentMethod" component={PaymentMethod} />
+            <HomeStack.Screen name="AddNewCard" component={AddNewCard} />
         </HomeStack.Navigator>
     );
 }
