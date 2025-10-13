@@ -53,7 +53,7 @@ export default function ConfirmBooking() {
     );
 
     const handleNext = () => {
-        navigation.navigate('Home');
+        navigation.navigate('PaymentMethod');
     };
 
     return (
