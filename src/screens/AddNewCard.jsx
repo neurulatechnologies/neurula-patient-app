@@ -6,14 +6,13 @@ import {
     StyleSheet,
     Image,
     ScrollView,
-    TextInput,
-    Pressable
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { colors, spacing } from '../theme';
 import Button from '../components/Button';
 import Header from '../components/Header';
+import TextField from '../components/TextField';
 
 const BG_WATERMARK = require('../../assets/background.png');
 // You can add your card background image here
@@ -114,61 +113,48 @@ export default function AddNewCard() {
                         <Text style={styles.formTitle}>Card Details</Text>
 
                         {/* Card Holder */}
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.inputLabel}>Card Holder</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter Holder"
-                                placeholderTextColor="#C8C8D0"
-                                value={cardHolder}
-                                onChangeText={setCardHolder}
-                            />
-                        </View>
+                        <TextField
+                            label="Card Holder"
+                            placeholder="Enter Holder"
+                            value={cardHolder}
+                            onChangeText={setCardHolder}
+                        />
 
                         {/* Card Number */}
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.inputLabel}>Card Number</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="0000 0000 0000 0000"
-                                placeholderTextColor="#C8C8D0"
-                                value={cardNumber}
-                                onChangeText={handleCardNumberChange}
-                                keyboardType="numeric"
-                                maxLength={19}
-                            />
-                        </View>
+                        <TextField
+                            label="Card Number"
+                            placeholder="0000 0000 0000 0000"
+                            value={cardNumber}
+                            onChangeText={handleCardNumberChange}
+                            keyboardType="numeric"
+                        />
 
                         {/* Expiry and CVC Row */}
                         <View style={styles.row}>
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={styles.inputLabel}>MM/YYYY</Text>
-                                <TextInput
-                                    style={styles.input}
+                            <View style={styles.halfWidth}>
+                                <TextField
+                                    label="MM/YYYY"
                                     placeholder="MM/YYYY"
-                                    placeholderTextColor="#C8C8D0"
                                     value={expiry}
                                     onChangeText={handleExpiryChange}
                                     keyboardType="numeric"
-                                    maxLength={7}
+                                    style={{ marginBottom: 0 }}
                                 />
                             </View>
 
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={styles.inputLabel}>CVC</Text>
-                                <TextInput
-                                    style={styles.input}
+                            <View style={styles.halfWidth}>
+                                <TextField
+                                    label="CVC"
                                     placeholder="***"
-                                    placeholderTextColor="#C8C8D0"
                                     value={cvc}
                                     onChangeText={setCvc}
                                     keyboardType="numeric"
-                                    maxLength={4}
-                                    secureTextEntry
+                                    secure={true}
+                                    style={{ marginBottom: 0 }}
                                 />
                             </View>
                         </View>
-                        <Button title="Save" onPress={handleSave} />
+                        <Button title="Save" onPress={handleSave} style={{ marginTop: spacing.md }} />
                     </View>
                 </View>
             </ScrollView>
@@ -301,38 +287,13 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
 
-    /* Input Group */
-    inputGroup: {
-        marginBottom: 16,
-    },
-    inputLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#1a1a1a',
-        marginBottom: 8,
-    },
-    input: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 16,
-        fontSize: 15,
-        color: '#1a1a1a',
-    },
-
     /* Row for Expiry and CVC */
     row: {
         flexDirection: 'row',
         gap: 12,
+        marginBottom: 16,
     },
     halfWidth: {
         flex: 1,
-    },
-
-    /* Footer */
-    footer: {
-        position: 'absolute',
-        left: 16,
-        right: 16,
-        bottom: 16,
     },
 });
