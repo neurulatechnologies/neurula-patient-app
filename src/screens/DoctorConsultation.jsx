@@ -17,6 +17,7 @@ import { colors, spacing } from '../theme';
 
 // Background watermark and doctor images
 const BG_WATERMARK = require('../../assets/background.png');
+const FILTER_ICON = require('../../assets/icons/filter-icon.png');
 const DOC1 = require('../../assets/doc1.png');
 const DOC2 = require('../../assets/doc2.png');
 const DOC3 = require('../../assets/doc3.png');
@@ -167,7 +168,7 @@ export default function DoctorConsultation() {
             <View style={styles.categoryContainer}>
                 <Text style={styles.sectionTitle}>Select Doctor</Text>
                 <Pressable style={styles.filterButton}>
-                    <Icon name="sliders" size={18} color={colors.accent} />
+                    <Image source={FILTER_ICON} style={styles.filterIcon} />
                 </Pressable>
             </View>
 
@@ -257,7 +258,14 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     filterButton: {
-        padding: 4
+        padding: 10,
+        borderRadius: '50%',
+        backgroundColor: '#ffffff'
+    },
+    filterIcon: {
+        width: 18,
+        height: 18,
+        tintColor: colors.accent,
     },
     categoriesScroll: {
         // backgroundColor: colors.background,
