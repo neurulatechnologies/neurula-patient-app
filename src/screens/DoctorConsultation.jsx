@@ -149,56 +149,54 @@ export default function DoctorConsultation() {
                 onNotificationPress={() => navigation.navigate('Notifications')}
                 onMenuPress={() => navigation.toggleDrawer?.()}
             />
-            <View style={styles.mainWrapper}>
-                {/* Search Bar */}
-                <View style={styles.searchContainer}>
-                    <View style={styles.searchInputContainer}>
-                        <Icon name="search" size="small" color={colors.textLight} style={styles.searchIcon} />
-                        <TextInput
-                            style={styles.searchInput}
-                            placeholder="Search here..."
-                            placeholderTextColor={colors.textLight}
-                            value={searchText}
-                            onChangeText={setSearchText}
-                        />
-                    </View>
+            {/* Search Bar */}
+            <View style={styles.searchContainer}>
+                <View style={styles.searchInputContainer}>
+                    <Icon name="search" size="small" color={colors.textLight} style={styles.searchIcon} />
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Search here..."
+                        placeholderTextColor={colors.textLight}
+                        value={searchText}
+                        onChangeText={setSearchText}
+                    />
                 </View>
-
-                {/* Category Tabs */}
-                <View style={styles.categoryContainer}>
-                    <Text style={styles.sectionTitle}>Select Doctor</Text>
-                    <Pressable style={styles.filterButton}>
-                        <Icon name="sliders" size="small" color={colors.accent} />
-                    </Pressable>
-                </View>
-
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.categoriesScroll}
-                    contentContainerStyle={styles.categoriesContent}
-                >
-                    {categories.map((category) => (
-                        <CategoryTab
-                            key={category}
-                            title={category}
-                            isSelected={selectedCategory === category}
-                            onPress={() => setSelectedCategory(category)}
-                        />
-                    ))}
-                </ScrollView>
-
-                {/* Doctors List */}
-                <ScrollView
-                    style={styles.doctorsScroll}
-                    contentContainerStyle={styles.doctorsContent}
-                    showsVerticalScrollIndicator={false}
-                >
-                    {filteredDoctors.map((doctor) => (
-                        <DoctorCard key={doctor.id} doctor={doctor} />
-                    ))}
-                </ScrollView>
             </View>
+
+            {/* Category Tabs */}
+            <View style={styles.categoryContainer}>
+                <Text style={styles.sectionTitle}>Select Doctor</Text>
+                <Pressable style={styles.filterButton}>
+                    <Icon name="sliders" size={18} color={colors.accent} />
+                </Pressable>
+            </View>
+
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.categoriesScroll}
+                contentContainerStyle={styles.categoriesContent}
+            >
+                {categories.map((category) => (
+                    <CategoryTab
+                        key={category}
+                        title={category}
+                        isSelected={selectedCategory === category}
+                        onPress={() => setSelectedCategory(category)}
+                    />
+                ))}
+            </ScrollView>
+
+            {/* Doctors List */}
+            <ScrollView
+                style={styles.doctorsScroll}
+                contentContainerStyle={styles.doctorsContent}
+                showsVerticalScrollIndicator={false}
+            >
+                {filteredDoctors.map((doctor) => (
+                    <DoctorCard key={doctor.id} doctor={doctor} />
+                ))}
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -209,16 +207,13 @@ const styles = StyleSheet.create({
         // backgroundColor: colors.background,
     },
 
-    mainWrapper: {
-        flex: 1,
-    },
     bg: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         // width: '100%',
-        // opacity: 0.2,
+        opacity: 0.2,
     },
 
 
@@ -255,7 +250,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: spacing.lg,
         paddingBottom: spacing.md,
-        // backgroundColor: colors.background,
     },
     sectionTitle: {
         fontSize: 18,
@@ -263,7 +257,7 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     filterButton: {
-        padding: 4,
+        padding: 4
     },
     categoriesScroll: {
         // backgroundColor: colors.background,
