@@ -53,11 +53,11 @@ function HomeStackNavigator() {
                 headerShown: false,
             }}
         >
-            {/* <HomeStack.Screen name="HomeMain" component={Home} />
+            <HomeStack.Screen name="HomeMain" component={Home} />
             <HomeStack.Screen name="ServicesList" component={ServicesList} />
             <HomeStack.Screen name="DoctorConsultation" component={DoctorConsultation} />
             <HomeStack.Screen name="BookAppointment" component={BookAppointment} />
-            <HomeStack.Screen name="AppointmentPatientDetails" component={AppointmentPatientDetails} /> */}
+            <HomeStack.Screen name="AppointmentPatientDetails" component={AppointmentPatientDetails} />
             <HomeStack.Screen name="ConfirmBooking" component={ConfirmBooking} />
             <HomeStack.Screen name="PaymentMethod" component={PaymentMethod} />
         </HomeStack.Navigator>

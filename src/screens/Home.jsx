@@ -239,7 +239,7 @@ export default function Home() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FAFBFC',
+        // backgroundColor: '#FAFBFC',
     },
     watermark: {
         position: 'absolute',
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
         right: 0,
         bottom: 0,
         pointerEvents: 'none',
-        opacity: 0.03,
+        opacity: 0.5,
         width: screenWidth,
         height: screenHeight,
     },

@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/Feather'; // or your preferred icon library
 import Header from '../components/Header';
+import Icon from '../components/Icon';
+import { colors, spacing } from '../theme';
 
-// You'll need to add these doctor images to your assets
+// Background watermark and doctor images
+const BG_WATERMARK = require('../../assets/background.png');
 const DOC1 = require('../../assets/doc1.png');
 const DOC2 = require('../../assets/doc2.png');
 const DOC3 = require('../../assets/doc3.png');
@@ -102,21 +104,21 @@ export default function DoctorConsultation() {
                     <Text style={styles.doctorSpecialty}>{doctor.specialty}</Text>
 
                     <View style={styles.detailRow}>
-                        <Icon name="briefcase" size={14} color="#9CA3AF" />
+                        <Icon name="briefcase" size="small" color={colors.textLight} />
                         <Text style={styles.detailText}>{doctor.experience}</Text>
                         <View style={styles.ratingContainer}>
-                            <Icon name="star" size={14} color="#F59E0B" />
+                            <Icon name="star" size="small" color="#F59E0B" />
                             <Text style={styles.ratingText}>{doctor.rating}</Text>
                         </View>
                     </View>
 
                     <View style={styles.detailRow}>
-                        <Icon name="map-pin" size={14} color="#9CA3AF" />
+                        <Icon name="map-pin" size="small" color={colors.textLight} />
                         <Text style={styles.detailText}>{doctor.location}</Text>
                     </View>
 
                     <View style={styles.detailRow}>
-                        <Icon name="clock" size={14} color="#9CA3AF" />
+                        <Icon name="clock" size="small" color={colors.textLight} />
                         <Text style={styles.detailText}>Next available: {doctor.nextAvailable}</Text>
                     </View>
                     <View style={styles.doctorFooter}>
@@ -135,6 +137,9 @@ export default function DoctorConsultation() {
 
     return (
         <SafeAreaView style={styles.container}>
+            {/* Background watermark */}
+            <Image source={BG_WATERMARK} style={styles.bg} resizeMode="contain" />
+
             {/* Header */}
             <Header
                 variant="standard"
@@ -144,55 +149,56 @@ export default function DoctorConsultation() {
                 onNotificationPress={() => navigation.navigate('Notifications')}
                 onMenuPress={() => navigation.toggleDrawer?.()}
             />
-
-            {/* Search Bar */}
-            <View style={styles.searchContainer}>
-                <View style={styles.searchInputContainer}>
-                    <Icon name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
-                    <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search here..."
-                        placeholderTextColor="#9CA3AF"
-                        value={searchText}
-                        onChangeText={setSearchText}
-                    />
+            <View style={styles.mainWrapper}>
+                {/* Search Bar */}
+                <View style={styles.searchContainer}>
+                    <View style={styles.searchInputContainer}>
+                        <Icon name="search" size="small" color={colors.textLight} style={styles.searchIcon} />
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="Search here..."
+                            placeholderTextColor={colors.textLight}
+                            value={searchText}
+                            onChangeText={setSearchText}
+                        />
+                    </View>
                 </View>
+
+                {/* Category Tabs */}
+                <View style={styles.categoryContainer}>
+                    <Text style={styles.sectionTitle}>Select Doctor</Text>
+                    <Pressable style={styles.filterButton}>
+                        <Icon name="sliders" size="small" color={colors.accent} />
+                    </Pressable>
+                </View>
+
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.categoriesScroll}
+                    contentContainerStyle={styles.categoriesContent}
+                >
+                    {categories.map((category) => (
+                        <CategoryTab
+                            key={category}
+                            title={category}
+                            isSelected={selectedCategory === category}
+                            onPress={() => setSelectedCategory(category)}
+                        />
+                    ))}
+                </ScrollView>
+
+                {/* Doctors List */}
+                <ScrollView
+                    style={styles.doctorsScroll}
+                    contentContainerStyle={styles.doctorsContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {filteredDoctors.map((doctor) => (
+                        <DoctorCard key={doctor.id} doctor={doctor} />
+                    ))}
+                </ScrollView>
             </View>
-
-            {/* Category Tabs */}
-            <View style={styles.categoryContainer}>
-                <Text style={styles.sectionTitle}>Select Doctor</Text>
-                <Pressable style={styles.filterButton}>
-                    <Icon name="sliders" size={18} color="#6366F1" />
-                </Pressable>
-            </View>
-
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.categoriesScroll}
-                contentContainerStyle={styles.categoriesContent}
-            >
-                {categories.map((category) => (
-                    <CategoryTab
-                        key={category}
-                        title={category}
-                        isSelected={selectedCategory === category}
-                        onPress={() => setSelectedCategory(category)}
-                    />
-                ))}
-            </ScrollView>
-
-            {/* Doctors List */}
-            <ScrollView
-                style={styles.doctorsScroll}
-                contentContainerStyle={styles.doctorsContent}
-                showsVerticalScrollIndicator={false}
-            >
-                {filteredDoctors.map((doctor) => (
-                    <DoctorCard key={doctor.id} doctor={doctor} />
-                ))}
-            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -200,15 +206,27 @@ export default function DoctorConsultation() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8FAFC',
+        // backgroundColor: colors.background,
+    },
+
+    mainWrapper: {
+        flex: 1,
+    },
+    bg: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        // width: '100%',
+        // opacity: 0.2,
     },
 
 
     // Search Styles
     searchContainer: {
-        paddingHorizontal: 20,
-        paddingVertical: 20,
-        backgroundColor: '#F8FAFC',
+        paddingHorizontal: spacing.lg,
+        paddingVertical: spacing.lg,
+        // backgroundColor: colors.background,
     },
     searchInputContainer: {
         flexDirection: 'row',
@@ -235,10 +253,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        // paddingTop: 24,
-        paddingBottom: 16,
-        backgroundColor: '#F8FAFC',
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.md,
+        // backgroundColor: colors.background,
     },
     sectionTitle: {
         fontSize: 18,
@@ -249,7 +266,7 @@ const styles = StyleSheet.create({
         padding: 4,
     },
     categoriesScroll: {
-        backgroundColor: '#F8FAFC',
+        // backgroundColor: colors.background,
         maxHeight: 50,
     },
     categoriesContent: {
@@ -267,7 +284,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     categoryTabSelected: {
-        backgroundColor: '#6366F1',
+        backgroundColor: colors.accent,
     },
     categoryText: {
         fontSize: 14,
@@ -282,32 +299,21 @@ const styles = StyleSheet.create({
     // Doctors List Styles
     doctorsScroll: {
         flex: 1,
-        backgroundColor: '#F8FAFC',
+        // backgroundColor: colors.background,
         marginBottom: 40
     },
     doctorsContent: {
-        padding: 20,
-        // marginBottom: 200
+        padding: spacing.lg,
     },
 
     // Doctor Card Styles
     doctorCard: {
         backgroundColor: '#FFFFFF',
         borderRadius: 16,
-        // padding: 20,
-        // paddingBottom: 20,
         paddingTop: 20,
         paddingInlineStart: 0,
         paddingInlineEnd: 20,
         marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
-        elevation: 4,
         borderWidth: 1,
         borderColor: '#F1F5F9',
     },
@@ -332,7 +338,7 @@ const styles = StyleSheet.create({
     },
     doctorSpecialty: {
         fontSize: 14,
-        color: '#8B5CF6',
+        color: colors.accent,
         marginBottom: 12,
         fontWeight: '500',
     },
@@ -371,18 +377,10 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     bookButton: {
-        backgroundColor: '#8B5CF6',
+        backgroundColor: colors.accent,
         paddingHorizontal: 14,
         paddingVertical: 8,
         borderRadius: 16,
-        shadowColor: '#8B5CF6',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 3,
     },
     bookButtonText: {
         color: '#FFFFFF',
