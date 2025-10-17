@@ -54,6 +54,15 @@ export default function AddNewCard() {
         setExpiry(formatted);
     };
 
+    const detectCardBrand = (number) => {
+        const cleaned = number.replace(/\s/g, '');
+        if (/^4/.test(cleaned)) return 'Visa';
+        if (/^5[1-5]/.test(cleaned)) return 'Mastercard';
+        if (/^3[47]/.test(cleaned)) return 'Amex';
+        if (/^6(?:011|5)/.test(cleaned)) return 'Discover';
+        return 'Card';
+    };
+
     const handleSave = () => {
         // Validate and save card
         if (!cardHolder || !cardNumber || !expiry || !cvc) {
@@ -61,8 +70,21 @@ export default function AddNewCard() {
             return;
         }
 
-        // Navigate back to payment method
-        navigation.goBack();
+        // Extract last 4 digits
+        const cleaned = cardNumber.replace(/\s/g, '');
+        const last4 = cleaned.slice(-4);
+        const brand = detectCardBrand(cardNumber);
+
+        // Create new card object
+        const newCard = {
+            id: `card_${Date.now()}`,
+            brand,
+            last4,
+            holder: cardHolder,
+        };
+
+        // Navigate back to payment method with new card data
+        navigation.navigate('PaymentMethod', { newCard });
     };
 
     return (

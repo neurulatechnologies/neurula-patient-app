@@ -12,7 +12,7 @@ const BG_WATERMARK = require('../../assets/background.png');
 const BASE_METHODS = [
     { id: 'cash', label: 'Cash on Delivery', disabled: true },
     { id: 'desk', label: 'Pay On- Desk', disabled: true },
-    { id: 'bank', label: 'Online Payment', disabled: false, hasAction: true },
+    { id: 'bank', label: 'Bank Card', disabled: false, hasAction: true },
     { id: 'neurula', label: 'Neurula Health', disabled: false },
     { id: 'apple', label: 'Apple Pay', disabled: false },
     { id: 'google', label: 'Google Pay', disabled: false },
@@ -43,7 +43,19 @@ export default function PaymentMethod() {
         }, [route.params, cards, navigation])
     );
 
-    const methods = useMemo(() => BASE_METHODS, []);
+    const methods = useMemo(() => {
+        if (cards.length === 0) {
+            // No cards yet - show "Bank Card" with add new option
+            return BASE_METHODS;
+        } else {
+            // Has cards - replace "Bank Card" with "Online Payment" and show saved cards
+            return BASE_METHODS.map(method =>
+                method.id === 'bank'
+                    ? { ...method, label: 'Online Payment' }
+                    : method
+            );
+        }
+    }, [cards.length]);
 
     const handleAddNew = () => {
         // Navigate to your add card screen; return with params: { newCard: { id, brand, last4 } }
@@ -117,7 +129,7 @@ export default function PaymentMethod() {
                                         {method.label}
                                     </Text>
 
-                                    {/* + Add New (for Online Payment) */}
+                                    {/* + Add New (for Bank Card when no cards, or Online Payment when has cards) */}
                                     {isBank && isSelected && (
                                         <Pressable style={styles.addButton} onPress={handleAddNew} hitSlop={8}>
                                             <Text style={styles.addButtonText}>+ Add New</Text>
@@ -125,51 +137,41 @@ export default function PaymentMethod() {
                                     )}
                                 </Pressable>
 
-                                {/* Expanded saved-cards list under Online Payment — only when selected */}
-                                {isBank && isSelected && (
+                                {/* Expanded saved-cards list — only show when cards exist and bank is selected */}
+                                {isBank && isSelected && cards.length > 0 && (
                                     <View style={styles.savedCardsWrap}>
-                                        {/* Case A: NO CARDS YET → show empty/help row (matches your “initials we don’t have any card” flow) */}
-                                        {cards.length === 0 ? (
-                                            <View style={styles.emptyCardRow}>
-                                                <Text style={styles.emptyText}>
-                                                    No saved cards yet. Tap <Text style={{ fontWeight: '700' }}>+ Add New</Text> to add a card.
-                                                </Text>
-                                            </View>
-                                        ) : (
-                                            // Case B: Show selectable saved card rows
-                                            cards.map((card) => (
-                                                <View key={card.id} style={styles.savedCardRow}>
-                                                    {/* card radio */}
-                                                    <Pressable
-                                                        onPress={() => setSelectedCardId(card.id)}
-                                                        hitSlop={8}
-                                                        style={styles.savedRadio}
-                                                    >
-                                                        <View style={[styles.radioOuterSmall, selectedCardId === card.id && styles.radioActive]}>
-                                                            {selectedCardId === card.id ? <View style={styles.radioInnerSmall} /> : null}
-                                                        </View>
-                                                    </Pressable>
-
-                                                    {/* brand + last4 */}
-                                                    <View style={styles.cardInfo}>
-                                                        <View style={styles.brandBadge}>
-                                                            {/* You can replace with brand icons/images if you have assets */}
-                                                            <Text style={styles.brandText}>{(card.brand || 'VISA').toUpperCase()}</Text>
-                                                        </View>
-                                                        <Text style={styles.cardDigits}>•••• {card.last4 || '0000'}</Text>
+                                        {cards.map((card) => (
+                                            <View key={card.id} style={styles.savedCardRow}>
+                                                {/* card radio */}
+                                                <Pressable
+                                                    onPress={() => setSelectedCardId(card.id)}
+                                                    hitSlop={8}
+                                                    style={styles.savedRadio}
+                                                >
+                                                    <View style={[styles.radioOuterSmall, selectedCardId === card.id && styles.radioActive]}>
+                                                        {selectedCardId === card.id ? <View style={styles.radioInnerSmall} /> : null}
                                                     </View>
+                                                </Pressable>
 
-                                                    {/* delete */}
-                                                    <Pressable
-                                                        onPress={() => handleDeleteCard(card.id)}
-                                                        hitSlop={8}
-                                                        accessibilityLabel="Delete card"
-                                                    >
-                                                        <Text style={styles.trashIcon}>🗑️</Text>
-                                                    </Pressable>
+                                                {/* brand + last4 */}
+                                                <View style={styles.cardInfo}>
+                                                    <View style={styles.brandBadge}>
+                                                        {/* You can replace with brand icons/images if you have assets */}
+                                                        <Text style={styles.brandText}>{(card.brand || 'VISA').toUpperCase()}</Text>
+                                                    </View>
+                                                    <Text style={styles.cardDigits}>•••• {card.last4 || '0000'}</Text>
                                                 </View>
-                                            ))
-                                        )}
+
+                                                {/* delete */}
+                                                <Pressable
+                                                    onPress={() => handleDeleteCard(card.id)}
+                                                    hitSlop={8}
+                                                    accessibilityLabel="Delete card"
+                                                >
+                                                    <Text style={styles.trashIcon}>🗑️</Text>
+                                                </Pressable>
+                                            </View>
+                                        ))}
                                     </View>
                                 )}
                             </View>
