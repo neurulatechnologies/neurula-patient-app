@@ -41,7 +41,7 @@ export default function AppointmentConfirmation() {
 
     const onBack = () => navigation.goBack();
     const BackToHome = () => {
-        navigation.navigate('Home');
+        navigation.navigate('HomeMain');
     };
 
     return (
