@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
 
     docSpec: {
         marginTop: 2,
-        color: '#8B6AF0',
+        color: colors.primary,
         fontFamily: typography.fontFamily?.medium,
         fontSize: 14,
     },
@@ -441,10 +441,15 @@ const styles = StyleSheet.create({
     badge: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        height: 36,
+        paddingHorizontal: 14,
+        height: 38,
         backgroundColor: '#FFFFFF',
-        borderRadius: 18,
+        borderRadius: 20,
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        elevation: 2,
     },
 
     badgeScrollView: {
@@ -470,11 +475,13 @@ const styles = StyleSheet.create({
     parentCard: {
         marginTop: spacing.lg,
         padding: spacing.md,
-        backgroundColor: 'rgba(255, 255, 255, 0.40)',
-        borderBottomLeftRadius: 30,
-        borderBottomRightRadius: 30,
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
+        backgroundColor: colors.glassMorphism,
+        borderRadius: 30,
+        shadowColor: colors.shadowGlass,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 3,
     },
 
     // Section Title
@@ -490,19 +497,19 @@ const styles = StyleSheet.create({
     typeCard: {
         padding: spacing.sm,
         borderRadius: 30,
-        backgroundColor: 'rgba(255, 255, 255, 0.40)',
+        backgroundColor: colors.glassMorphismDark,
         borderWidth: 1,
-        borderColor: '#FFFFFF',
+        borderColor: colors.borderGradient,
     },
 
     // Segmented Control
     segment: {
         flexDirection: 'row',
-        backgroundColor: '#F5F5F7',
+        backgroundColor: colors.backgroundLight,
         padding: 4,
         borderRadius: 30,
         justifyContent: 'space-between',
-        gap: 6
+        gap: 6,
     },
 
     segmentCompact: {
@@ -519,8 +526,8 @@ const styles = StyleSheet.create({
     },
 
     segItemActive: {
-        backgroundColor: '#7B4BEB',
-        shadowColor: '#7B4BEB',
+        backgroundColor: colors.primary,
+        shadowColor: colors.primary,
         shadowOpacity: 0.3,
         shadowOffset: { width: 0, height: 4 },
         shadowRadius: 8,
@@ -541,9 +548,9 @@ const styles = StyleSheet.create({
     dateCard: {
         padding: spacing.md,
         borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.40)',
+        backgroundColor: colors.glassMorphismDark,
         borderWidth: 1,
-        borderColor: '#FFFFFF',
+        borderColor: colors.borderGradient,
     },
 
     // Time Card (removed individual card styling)
@@ -551,9 +558,9 @@ const styles = StyleSheet.create({
         padding: spacing.sm,
         paddingTop: spacing.sm,
         borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.40)',
+        backgroundColor: colors.glassMorphismDark,
         borderWidth: 1,
-        borderColor: '#FFFFFF',
+        borderColor: colors.borderGradient,
     },
 
     // Month Navigation
@@ -566,12 +573,14 @@ const styles = StyleSheet.create({
     },
 
     chevButton: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+        borderWidth: 1,
+        borderColor: colors.borderLight,
     },
 
     monthText: {
@@ -591,18 +600,20 @@ const styles = StyleSheet.create({
     },
 
     dayPill: {
-        minWidth: 52,
-        paddingVertical: 14,
-        paddingHorizontal: 8,
-        borderRadius: 16,
+        minWidth: 56,
+        paddingVertical: 16,
+        paddingHorizontal: 10,
+        borderRadius: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'transparent',
+        backgroundColor: colors.backgroundLight,
+        borderWidth: 1,
+        borderColor: 'transparent',
     },
 
     dayPillSelected: {
-        backgroundColor: '#7B4BEB',
-        shadowColor: '#7B4BEB',
+        backgroundColor: colors.primary,
+        shadowColor: colors.primary,
         shadowOpacity: 0.25,
         shadowOffset: { width: 0, height: 4 },
         shadowRadius: 12,
@@ -662,18 +673,19 @@ const styles = StyleSheet.create({
     },
 
     slotChip: {
-        // width: '31%',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
         borderRadius: 30,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#F5F5F7',
+        backgroundColor: colors.backgroundLight,
+        borderWidth: 1,
+        borderColor: colors.borderLight,
     },
 
     slotChipSelected: {
-        backgroundColor: '#7B4BEB',
-        shadowColor: '#7B4BEB',
+        backgroundColor: colors.primary,
+        shadowColor: colors.primary,
         shadowOpacity: 0.3,
         shadowOffset: { width: 0, height: 4 },
         shadowRadius: 8,
@@ -681,8 +693,9 @@ const styles = StyleSheet.create({
     },
 
     slotChipDisabled: {
-        backgroundColor: '#F5F5F7',
-        opacity: 0.4,
+        backgroundColor: colors.backgroundLight,
+        opacity: 0.5,
+        borderColor: 'transparent',
     },
 
     slotText: {
