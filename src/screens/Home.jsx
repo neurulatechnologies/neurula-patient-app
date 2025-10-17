@@ -249,8 +249,8 @@ const styles = StyleSheet.create({
         bottom: 0,
         pointerEvents: 'none',
         opacity: 0.5,
-        width: screenWidth,
-        height: screenHeight,
+        // width: screenWidth,
+        // height: screenHeight,
     },
     scroll: {
         flexGrow: 1,
