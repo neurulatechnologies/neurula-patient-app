@@ -673,8 +673,8 @@ const styles = StyleSheet.create({
     },
 
     slotChip: {
-        paddingHorizontal: 14,
-        paddingVertical: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 8,
         borderRadius: 30,
         alignItems: 'center',
         justifyContent: 'center',
