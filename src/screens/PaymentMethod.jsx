@@ -104,13 +104,16 @@ export default function PaymentMethod() {
                         const isBank = method.id === 'bank';
 
                         return (
-                            <View key={method.id}>
+                            <View
+                                key={method.id}
+                                style={[
+                                    styles.optionCard,
+                                    method.disabled && styles.optionCardDisabled,
+                                    isSelected && styles.optionCardSelected,
+                                ]}
+                            >
                                 <Pressable
-                                    style={[
-                                        styles.optionCard,
-                                        method.disabled && styles.optionCardDisabled,
-                                        isSelected && styles.optionCardSelected,
-                                    ]}
+                                    style={styles.optionCardHeader}
                                     onPress={() => !method.disabled && setSelectedMethod(method.id)}
                                     disabled={method.disabled}
                                 >
@@ -208,6 +211,9 @@ const styles = StyleSheet.create({
     optionCard: {
         backgroundColor: '#FFFFFF',
         borderRadius: 20,
+        overflow: 'hidden',
+    },
+    optionCardHeader: {
         paddingVertical: 18,
         paddingHorizontal: 16,
         flexDirection: 'row',
@@ -266,13 +272,11 @@ const styles = StyleSheet.create({
 
     // Saved cards
     savedCardsWrap: {
-        backgroundColor: 'rgba(255,255,255,0.40)',
-        borderRadius: 16,
+        backgroundColor: 'rgba(247, 248, 252, 0.6)',
+        borderTopWidth: 1,
+        borderTopColor: colors.borderLight,
         paddingVertical: 8,
-        marginTop: 8,
-        marginBottom: 4,
-        borderWidth: 1,
-        borderColor: colors.borderLight,
+        paddingHorizontal: 4,
     },
     emptyCardRow: {
         paddingVertical: 16,
