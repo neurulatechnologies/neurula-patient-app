@@ -71,7 +71,7 @@ export default function PaymentMethod() {
         // Block if bank selected but no card chosen
         if (selectedMethod === 'bank' && cards.length > 0 && !selectedCardId) return;
 
-        navigation.navigate('BookingSuccess', {
+        navigation.navigate('AppointmentConfirmation', {
             ...route.params,
             paymentMethod: selectedMethod,
             cardId: selectedMethod === 'bank' ? selectedCardId : null,
