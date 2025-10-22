@@ -10,7 +10,6 @@ import {
     Image,
     Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../theme';
@@ -77,7 +76,7 @@ export default function Home() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             {/* background watermark */}
             <Image source={BG_WATERMARK} style={styles.watermark} resizeMode="contain" />
 
@@ -231,7 +230,7 @@ export default function Home() {
                     <Text style={styles.aiButtonIcon}>😊</Text>
                 </View>
             </Pressable>
-        </SafeAreaView>
+        </View>
     );
 }
 

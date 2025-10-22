@@ -9,7 +9,6 @@ import {
     Pressable,
     TextInput,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import Header from '../components/Header';
 import Icon from '../components/Icon';
@@ -137,7 +136,7 @@ export default function DoctorConsultation() {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             {/* Background watermark */}
             <Image source={BG_WATERMARK} style={styles.bg} resizeMode="contain" />
 
@@ -198,7 +197,7 @@ export default function DoctorConsultation() {
                     <DoctorCard key={doctor.id} doctor={doctor} />
                 ))}
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 

@@ -7,7 +7,6 @@ import {
     Image,
     ScrollView,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { colors, spacing } from '../theme';
 import Button from '../components/Button';
@@ -88,7 +87,7 @@ export default function AddNewCard() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <Image source={BG_WATERMARK} style={styles.bg} resizeMode="contain" />
             <Header
                 variant="standard"
@@ -180,7 +179,7 @@ export default function AddNewCard() {
                     </View>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 

@@ -8,7 +8,6 @@ import {
     Pressable,
     ScrollView,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Header from '../components/Header';
 import Icon from '../components/Icon';
@@ -146,7 +145,7 @@ export default function BookAppointment() {
         });
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <Image source={BG_WATERMARK} style={styles.watermark} resizeMode="cover" />
 
             {/* Header */}
@@ -330,7 +329,7 @@ export default function BookAppointment() {
                     </View>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 

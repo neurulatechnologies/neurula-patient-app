@@ -1,7 +1,11 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, StatusBar, Platform } from 'react-native';
+import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { colors, typography, spacing } from '../theme';
 import Icon from './Icon';
+
+// Get status bar height
+const STATUSBAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
 
 export default function Header({
   variant = 'standard', // 'home', 'standard', 'simple'
@@ -25,79 +29,19 @@ export default function Header({
   // Home variant specific rendering
   if (variant === 'home') {
     return (
-      <View style={[styles.container, styles.homeContainer, style]} {...props}>
-        <View style={styles.homeLeft}>
-          {greeting && (
-            <Text style={styles.greeting}>{greeting}</Text>
-          )}
-          {userName && (
-            <Text style={styles.userName}>{userName}</Text>
-          )}
-        </View>
+      <>
+        <ExpoStatusBar style="dark" translucent backgroundColor="transparent" />
+        <View style={[styles.container, styles.homeContainer, style]} {...props}>
+          <View style={styles.homeLeft}>
+            {greeting && (
+              <Text style={styles.greeting}>{greeting}</Text>
+            )}
+            {userName && (
+              <Text style={styles.userName}>{userName}</Text>
+            )}
+          </View>
 
-        <View style={styles.homeActions}>
-          {onNotificationPress && (
-            <Pressable
-              style={styles.actionButton}
-              onPress={onNotificationPress}
-              hitSlop={8}
-            >
-              <Text style={styles.actionIcon}>🔔</Text>
-            </Pressable>
-          )}
-          {onMenuPress && (
-            <Pressable
-              style={styles.actionButton}
-              onPress={onMenuPress}
-              hitSlop={8}
-            >
-              <Text style={styles.actionIcon}>☰</Text>
-            </Pressable>
-          )}
-        </View>
-      </View>
-    );
-  }
-
-  // Standard and simple variants
-  return (
-    <View style={[styles.container, style]} {...props}>
-      {leftIcon && (
-        <Pressable
-          style={styles.iconButton}
-          onPress={onLeftPress}
-          hitSlop={8}
-        >
-          <Text style={styles.backIcon}>‹</Text>
-        </Pressable>
-      )}
-
-      <View style={[styles.textContainer, variant === 'simple' && styles.simpleTextContainer]}>
-        {title && (
-          <Text style={[styles.title, titleStyle]}>{title}</Text>
-        )}
-        {subtitle && (
-          <Text style={[styles.subtitle, subtitleStyle]}>{subtitle}</Text>
-        )}
-      </View>
-
-      {/* Right actions */}
-      <View style={styles.rightActions}>
-        {rightActions.map((action, index) => (
-          <Pressable
-            key={index}
-            style={[styles.actionButton, index > 0 && styles.actionSpacing]}
-            onPress={action.onPress}
-            hitSlop={8}
-            testID={action.testID}
-          >
-            <Text style={styles.actionIcon}>{action.icon}</Text>
-          </Pressable>
-        ))}
-
-        {/* Default notification and menu for standard variant */}
-        {variant === 'standard' && rightActions.length === 0 && (
-          <>
+          <View style={styles.homeActions}>
             {onNotificationPress && (
               <Pressable
                 style={styles.actionButton}
@@ -109,27 +53,93 @@ export default function Header({
             )}
             {onMenuPress && (
               <Pressable
-                style={[styles.actionButton, styles.actionSpacing]}
+                style={styles.actionButton}
                 onPress={onMenuPress}
                 hitSlop={8}
               >
-                <Text style={styles.actionIcon}>≡</Text>
+                <Text style={styles.actionIcon}>☰</Text>
               </Pressable>
             )}
-          </>
-        )}
+          </View>
+        </View>
+      </>
+    );
+  }
 
-        {rightIcon && (
+  // Standard and simple variants
+  return (
+    <>
+      <ExpoStatusBar style="dark" translucent backgroundColor="transparent" />
+      <View style={[styles.container, style]} {...props}>
+        {leftIcon && (
           <Pressable
             style={styles.iconButton}
-            onPress={onRightPress}
+            onPress={onLeftPress}
             hitSlop={8}
           >
-            <Icon name={rightIcon} size="medium" color={colors.text} />
+            <Text style={styles.backIcon}>‹</Text>
           </Pressable>
         )}
+
+        <View style={[styles.textContainer, variant === 'simple' && styles.simpleTextContainer]}>
+          {title && (
+            <Text style={[styles.title, titleStyle]}>{title}</Text>
+          )}
+          {subtitle && (
+            <Text style={[styles.subtitle, subtitleStyle]}>{subtitle}</Text>
+          )}
+        </View>
+
+        {/* Right actions */}
+        <View style={styles.rightActions}>
+          {rightActions.map((action, index) => (
+            <Pressable
+              key={index}
+              style={[styles.actionButton, index > 0 && styles.actionSpacing]}
+              onPress={action.onPress}
+              hitSlop={8}
+              testID={action.testID}
+            >
+              <Text style={styles.actionIcon}>{action.icon}</Text>
+            </Pressable>
+          ))}
+
+          {/* Default notification and menu for standard variant */}
+          {variant === 'standard' && rightActions.length === 0 && (
+            <>
+              {onNotificationPress && (
+                <Pressable
+                  style={styles.actionButton}
+                  onPress={onNotificationPress}
+                  hitSlop={8}
+                >
+                  <Text style={styles.actionIcon}>🔔</Text>
+                </Pressable>
+              )}
+              {onMenuPress && (
+                <Pressable
+                  style={[styles.actionButton, styles.actionSpacing]}
+                  onPress={onMenuPress}
+                  hitSlop={8}
+                >
+                  <Text style={styles.actionIcon}>≡</Text>
+                </Pressable>
+              )}
+            </>
+          )}
+
+          {rightIcon && (
+            <Pressable
+              style={styles.iconButton}
+              onPress={onRightPress}
+              hitSlop={8}
+            >
+              <Icon name={rightIcon} size="medium" color={colors.text} />
+            </Pressable>
+          )}
+        </View>
       </View>
-    </View>
+    </>
   );
 }
 
@@ -138,8 +148,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    minHeight: spacing.component?.headerHeight || 56,
+    paddingTop: STATUSBAR_HEIGHT + spacing.md,
+    paddingBottom: spacing.md,
+    minHeight: STATUSBAR_HEIGHT + (spacing.component?.headerHeight || 56),
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
     backgroundColor: 'rgba(255, 255, 255, 0.40)',
@@ -155,7 +166,6 @@ const styles = StyleSheet.create({
   // Home variant styles
   homeContainer: {
     alignItems: 'flex-start',
-    paddingTop: spacing.sm,
     // Inherit glassmorphism from container
     // marginBottom: spacing.xl,
   },

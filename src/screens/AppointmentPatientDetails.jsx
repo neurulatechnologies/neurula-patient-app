@@ -11,7 +11,6 @@ import {
     Platform,
     TouchableOpacity,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Header from '../components/Header';
 import Icon from '../components/Icon';
@@ -151,7 +150,7 @@ export default function AppointmentPatientDetails() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             {/* Background watermark */}
             <Image source={BG_WATERMARK} style={styles.watermark} resizeMode="contain" />
 
@@ -382,7 +381,7 @@ export default function AppointmentPatientDetails() {
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView>
+        </View>
     );
 }
 

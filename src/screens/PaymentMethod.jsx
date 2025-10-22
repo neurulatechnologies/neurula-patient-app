@@ -1,7 +1,6 @@
 // File: PaymentMethod.jsx
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { colors, spacing, typography } from '../theme';
 import Button from '../components/Button';
@@ -86,7 +85,7 @@ export default function PaymentMethod() {
     }, [selectedMethod, cards.length, selectedCardId]);
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <Image source={BG_WATERMARK} style={styles.bg} resizeMode="contain" />
             <Header
                 title="Book Appointment"
@@ -189,7 +188,7 @@ export default function PaymentMethod() {
                     />
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 
