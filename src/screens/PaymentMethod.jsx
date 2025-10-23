@@ -91,6 +91,8 @@ export default function PaymentMethod() {
                 title="Book Appointment"
                 leftIcon="chevron-left"
                 onLeftPress={() => navigation.goBack()}
+                onNotificationPress={() => navigation.navigate('Notifications')}
+                onMenuPress={() => navigation.toggleDrawer?.()}
                 style={{ paddingHorizontal: spacing.lg }}
             />
 
