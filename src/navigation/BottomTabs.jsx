@@ -24,6 +24,7 @@ import Appointments from '../screens/Appointments';
 import Orders from '../screens/Orders';
 import Support from '../screens/Support';
 import Notifications from '../screens/Notifications';
+import ProfileSettings from '../screens/profileSetting';
 const Inbox = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
 const QuickAction = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
 
@@ -89,6 +90,7 @@ function ProfileStackNavigator() {
             <ProfileStack.Screen name="Orders" component={Orders} />
             <ProfileStack.Screen name="Support" component={Support} />
             <ProfileStack.Screen name="Notifications" component={Notifications} />
+            <ProfileStack.Screen name="ProfileSettings" component={ProfileSettings} />
         </ProfileStack.Navigator>
     );
 }

@@ -15,6 +15,7 @@ import Header from '../components/Header';
 
 const BG_WATERMARK = require('../../assets/background.png');
 const AVATAR = require('../../assets/logo1.png'); // replace with real user avatar when available
+const CHEVRON_RIGHT = require('../../assets/icons/chevron-right.png');
 
 export default function Profile() {
     const navigation = useNavigation();
@@ -61,53 +62,55 @@ export default function Profile() {
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
             >
-                {/* Profile card (glass) */}
-                <View style={styles.profileCard}>
-                    <View style={styles.avatarWrap}>
-                        <View style={styles.avatarRing}>
-                            <Image source={AVATAR} style={styles.avatar} />
-                        </View>
-                    </View>
-                    <Text style={styles.userName}>James Collins</Text>
-                    <Text style={styles.userEmail}>jamesc@gmail.com</Text>
-                </View>
-
-                {/* Menu list */}
-                <View style={styles.listWrap}>
-                    {items.map((it) => (
-                        <Pressable
-                            key={it.key}
-                            style={styles.listItem}
-                            onPress={() => onItemPress(it.route)}
-                            android_ripple={{ color: colors.shadowGlass }}
-                            accessibilityRole="button"
-                            accessibilityLabel={it.label}
-                        >
-                            <View style={styles.itemLeft}>
-                                <View style={styles.itemIconBubble}>
-                                    <Text style={styles.itemEmoji}>{it.icon}</Text>
-                                </View>
-                                <Text style={styles.itemLabel}>{it.label}</Text>
+                {/* Main Parent Card - Contains Profile + Menu Items */}
+                <View style={styles.mainCard}>
+                    {/* Profile Section */}
+                    <View style={styles.profileSection}>
+                        <View style={styles.avatarWrap}>
+                            <View style={styles.avatarRing}>
+                                <Image source={AVATAR} style={styles.avatar} />
                             </View>
-                            <Text style={styles.chev}>›</Text>
-                        </Pressable>
-                    ))}
+                        </View>
+                        <Text style={styles.userName}>James Collins</Text>
+                        <Text style={styles.userEmail}>jamesc@gmail.com</Text>
+                    </View>
+
+                    {/* Menu Items List */}
+                    <View style={styles.listWrap}>
+                        {items.map((it) => (
+                            <Pressable
+                                key={it.key}
+                                style={styles.listItem}
+                                onPress={() => onItemPress(it.route)}
+                                android_ripple={{ color: colors.shadowGlass }}
+                                accessibilityRole="button"
+                                accessibilityLabel={it.label}
+                            >
+                                <View style={styles.itemLeft}>
+                                    <View style={styles.itemIconBubble}>
+                                        <Text style={styles.itemEmoji}>{it.icon}</Text>
+                                    </View>
+                                    <Text style={styles.itemLabel}>{it.label}</Text>
+                                </View>
+                                <Image source={CHEVRON_RIGHT} style={styles.chevronIcon} />
+                            </Pressable>
+                        ))}
+                    </View>
+                    <Button
+                        title="Logout"
+                        onPress={onLogout}
+                        variant="primary"
+                        style={styles.logoutBtn}
+                        textStyle={styles.logoutText}
+                    />
                 </View>
 
                 {/* Logout button */}
-                <Button
-                    title="Logout"
-                    onPress={onLogout}
-                    variant="primary"
-                    style={styles.logoutBtn}
-                    textStyle={styles.logoutText}
-                />
+
             </ScrollView>
         </View>
     );
 }
-
-const CARD_BG = 'rgba(255,255,255,0.40)';
 
 const styles = StyleSheet.create({
     container: {
@@ -124,27 +127,31 @@ const styles = StyleSheet.create({
         opacity: 0.3,
     },
     content: {
-        paddingHorizontal: spacing.lg,
+        // paddingHorizontal: spacing.lg,
         paddingTop: spacing.lg,
         paddingBottom: spacing['3xl'] + 80, // Extra padding for tab bar
     },
 
-    // Profile card
-    profileCard: {
-        backgroundColor: CARD_BG,
-        borderRadius: 30,
+    // Main Parent Card - Contains everything
+    mainCard: {
+        backgroundColor: 'rgba(255, 255, 255, 0.40)',
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
         paddingVertical: spacing.xl,
-        paddingHorizontal: spacing.xl,
-        alignItems: 'center',
-        justifyContent: 'center',
+        paddingHorizontal: spacing.lg,
         shadowColor: colors.shadowGlass,
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.15,
         shadowRadius: 20,
-        borderWidth: 1,
-        borderColor: colors.borderGradient,
+        elevation: 8,
+    },
+
+    // Profile Section (inside main card)
+    profileSection: {
+        alignItems: 'center',
+        justifyContent: 'center',
         marginBottom: spacing.lg,
     },
     avatarWrap: {
@@ -186,22 +193,17 @@ const styles = StyleSheet.create({
 
     // List
     listWrap: {
-        marginTop: spacing.lg,
+        marginTop: spacing.md,
         gap: spacing.md,
     },
     listItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: CARD_BG,
-        borderRadius: 20,
-        paddingVertical: spacing.lg,
+        justifyContent: 'space-between',
+        backgroundColor: 'rgba(255, 255, 255, 0.60)',
+        borderRadius: 10,
+        paddingVertical: spacing.sm,
         paddingHorizontal: spacing.lg,
-        borderWidth: 1,
-        borderColor: colors.borderGradient,
-        shadowColor: colors.shadowGlass,
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.12,
-        shadowRadius: 18,
     },
     itemLeft: {
         flexDirection: 'row',
@@ -219,17 +221,20 @@ const styles = StyleSheet.create({
         borderColor: colors.borderLight,
         borderWidth: 1,
     },
-    itemEmoji: { fontSize: 18 },
+    itemEmoji: {
+        fontSize: 22,
+    },
     itemLabel: {
         fontFamily: 'Poppins_600SemiBold',
         fontSize: 16,
         fontWeight: '600',
-        color: colors.text,
-        lineHeight: 22,
+        color: '#3C2D4A',
+        lineHeight: 34,
     },
-    chev: {
-        fontSize: 22,
-        color: colors.textLight,
+    chevronIcon: {
+        width: 8,
+        height: 15,
+        tintColor: '#3C2D4A',
     },
 
     // Logout
