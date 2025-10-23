@@ -17,8 +17,14 @@ import ConfirmBooking from '../screens/ConfirmBooking';
 import PaymentMethod from '../screens/PaymentMethod';
 import AddNewCard from '../screens/AddNewCard';
 import AppointmentConfirmation from '../screens/AppointmentConfirm';
+import Profile from '../screens/Profile';
+import MedicalHistory from '../screens/MedicalHistory';
+import Settings from '../screens/Settings';
+import Appointments from '../screens/Appointments';
+import Orders from '../screens/Orders';
+import Support from '../screens/Support';
+import Notifications from '../screens/Notifications';
 const Inbox = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
-const Profile = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
 const QuickAction = () => <View style={{ flex: 1, backgroundColor: colors.background }} />;
 
 // ---- Tab icons (using text icons as fallback) ----
@@ -47,6 +53,7 @@ const TAB_ICONS = {
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
+const ProfileStack = createNativeStackNavigator();
 
 function HomeStackNavigator() {
     return (
@@ -68,6 +75,24 @@ function HomeStackNavigator() {
     );
 }
 
+function ProfileStackNavigator() {
+    return (
+        <ProfileStack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <ProfileStack.Screen name="ProfileMain" component={Profile} />
+            <ProfileStack.Screen name="MedicalHistory" component={MedicalHistory} />
+            <ProfileStack.Screen name="Settings" component={Settings} />
+            <ProfileStack.Screen name="Appointments" component={Appointments} />
+            <ProfileStack.Screen name="Orders" component={Orders} />
+            <ProfileStack.Screen name="Support" component={Support} />
+            <ProfileStack.Screen name="Notifications" component={Notifications} />
+        </ProfileStack.Navigator>
+    );
+}
+
 export default function BottomTabs() {
     return (
         <Tab.Navigator
@@ -83,7 +108,7 @@ export default function BottomTabs() {
             {/* Hidden route for the center FAB */}
             <Tab.Screen name="QuickAction" component={QuickAction} options={{ tabBarButton: () => null }} />
             <Tab.Screen name="Inbox" component={Inbox} />
-            <Tab.Screen name="Profile" component={Profile} />
+            <Tab.Screen name="Profile" component={ProfileStackNavigator} />
         </Tab.Navigator>
     );
 }
