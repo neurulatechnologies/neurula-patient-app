@@ -41,7 +41,7 @@ export default function BookingConfirmation() {
 
     const onBack = () => navigation.goBack();
     const onStartConsultation = () => {
-        navigation.navigate('VideoConsultation', { doctor, patient, schedule });
+        navigation.navigate('ChatConsultation', { doctor, patient, schedule });
     };
 
     return (
