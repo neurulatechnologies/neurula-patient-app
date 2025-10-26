@@ -24,7 +24,8 @@ import {
     Play,
     Pause
 } from 'lucide-react-native';
-import { colors } from '../theme';
+import { colors, spacing, typography } from '../theme';
+import Button from '../components/Button';
 
 // assets
 const BG_WATERMARK = require('../../assets/background.png');
@@ -74,6 +75,9 @@ export default function ChatConsultation() {
             isMe ? styles.bubbleMe : styles.bubbleDoc,
         ];
 
+        // Show avatar for: doctor (all messages) OR patient voice messages only
+        const showAvatar = !isMe || m.type === 'voice';
+
         return (
             <View key={m.id} style={[styles.row, isMe ? styles.rowEnd : styles.rowStart]}>
                 {!isMe && (
@@ -93,9 +97,10 @@ export default function ChatConsultation() {
                     <Text style={[styles.time, isMe ? styles.timeMe : styles.timeDoc]}>{m.time}</Text>
                 </View>
 
-                {isMe && (
+                {/* Show patient avatar ONLY for voice messages */}
+                {/* {isMe && m.type === 'voice' && (
                     <Image source={AVATAR_PATIENT} style={styles.avatar} />
-                )}
+                )} */}
             </View>
         );
     };
@@ -167,11 +172,11 @@ export default function ChatConsultation() {
                     />
 
                     <Pressable style={styles.composerIcon} hitSlop={8}>
-                        <Paperclip size={20} color={colors.primary} />
+                        <Paperclip size={20} color="#7A5AF8" />
                     </Pressable>
 
                     <Pressable style={styles.composerIcon} hitSlop={8}>
-                        <Mic size={20} color={colors.primary} />
+                        <Mic size={20} color="#7A5AF8" />
                     </Pressable>
 
                     <Pressable
@@ -192,6 +197,7 @@ function VoiceMessage({ isMe }) {
 
     return (
         <View style={styles.voiceRow}>
+            <Image source={AVATAR_PATIENT} style={styles.avatar} />
             <Pressable
                 onPress={() => setPlaying((v) => !v)}
                 style={[styles.playBtn, isMe && styles.playBtnMe]}
@@ -213,8 +219,8 @@ function VoiceMessage({ isMe }) {
                             styles.waveBar,
                             {
                                 height: Math.random() * 20 + 8,
-                                backgroundColor: isMe ? colors.primaryLight : colors.primary,
-                                opacity: playing && i < 12 ? 1 : 0.5,
+                                backgroundColor: isMe ? '#9B7AB8' : '#7A5AF8',
+                                opacity: playing && i < 20 ? 1 : 0.5,
                             }
                         ]}
                     />
@@ -320,7 +326,7 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     bubbleMe: {
-        backgroundColor: 'rgba(173, 83, 191, 0.15)',
+        backgroundColor: '#E8DFF0',
         borderTopRightRadius: 4,
     },
     bubbleText: {
@@ -344,19 +350,19 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 4,
-        width: 170
+        width: 300
     },
     playBtn: {
         width: 32,
         height: 32,
         borderRadius: 16,
-        backgroundColor: colors.primary,
+        backgroundColor: '#7A5AF8',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,
     },
     playBtnMe: {
-        backgroundColor: colors.primaryLight,
+        backgroundColor: '#9B7AB8',
     },
     waveformContainer: {
         flex: 1,
@@ -364,7 +370,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         height: 30,
         gap: 2,
-        width: '100%'
     },
     waveBar: {
         width: 2,
@@ -385,7 +390,7 @@ const styles = StyleSheet.create({
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: colors.primary
+        backgroundColor: '#7A5AF8'
     },
 
     /* Composer */
@@ -429,9 +434,9 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: colors.primary,
+        backgroundColor: '#7A5AF8',
         marginLeft: 8,
-        shadowColor: colors.primary,
+        shadowColor: '#7A5AF8',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
