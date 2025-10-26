@@ -24,8 +24,7 @@ import {
     Play,
     Pause
 } from 'lucide-react-native';
-import { colors, spacing, typography } from '../theme';
-import Button from '../components/Button';
+import { colors } from '../theme';
 
 // assets
 const BG_WATERMARK = require('../../assets/background.png');
@@ -168,11 +167,11 @@ export default function ChatConsultation() {
                     />
 
                     <Pressable style={styles.composerIcon} hitSlop={8}>
-                        <Paperclip size={20} color="#7A5AF8" />
+                        <Paperclip size={20} color={colors.primary} />
                     </Pressable>
 
                     <Pressable style={styles.composerIcon} hitSlop={8}>
-                        <Mic size={20} color="#7A5AF8" />
+                        <Mic size={20} color={colors.primary} />
                     </Pressable>
 
                     <Pressable
@@ -207,15 +206,15 @@ function VoiceMessage({ isMe }) {
 
             <View style={styles.waveformContainer}>
                 {/* Waveform bars */}
-                {[...Array(40)].map((_, i) => (
+                {[...Array(25)].map((_, i) => (
                     <View
                         key={i}
                         style={[
                             styles.waveBar,
                             {
                                 height: Math.random() * 20 + 8,
-                                backgroundColor: isMe ? '#9B7AB8' : '#7A5AF8',
-                                opacity: playing && i < 20 ? 1 : 0.5,
+                                backgroundColor: isMe ? colors.primaryLight : colors.primary,
+                                opacity: playing && i < 12 ? 1 : 0.5,
                             }
                         ]}
                     />
@@ -257,7 +256,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         backgroundColor: '#F5F7FB',
-        // backgroundColor: 'red',
     },
     headerCenter: {
         flex: 1,
@@ -294,7 +292,7 @@ const styles = StyleSheet.create({
     },
     row: {
         flexDirection: 'row',
-        alignItems: 'flex-end',
+        alignItems: 'flex-start', // CHANGED: from flex-end to flex-start
         marginBottom: 16
     },
     rowStart: { justifyContent: 'flex-start' },
@@ -322,7 +320,7 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     bubbleMe: {
-        backgroundColor: '#E8DFF0',
+        backgroundColor: 'rgba(173, 83, 191, 0.15)',
         borderTopRightRadius: 4,
     },
     bubbleText: {
@@ -346,18 +344,19 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 4,
+        width: 170
     },
     playBtn: {
         width: 32,
         height: 32,
         borderRadius: 16,
-        backgroundColor: '#7A5AF8',
+        backgroundColor: colors.primary,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,
     },
     playBtnMe: {
-        backgroundColor: '#9B7AB8',
+        backgroundColor: colors.primaryLight,
     },
     waveformContainer: {
         flex: 1,
@@ -365,6 +364,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         height: 30,
         gap: 2,
+        width: '100%'
     },
     waveBar: {
         width: 2,
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: '#7A5AF8'
+        backgroundColor: colors.primary
     },
 
     /* Composer */
@@ -429,9 +429,9 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#7A5AF8',
+        backgroundColor: colors.primary,
         marginLeft: 8,
-        shadowColor: '#7A5AF8',
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
