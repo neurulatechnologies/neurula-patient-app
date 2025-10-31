@@ -11,6 +11,7 @@ import ScanPassport from '../screens/ScanPassport';
 import BottomTabs from './BottomTabs';
 import BookingConfirmation from '../screens/BookingConfirmation';
 import ChatConsultation from '../screens/ChatConsultation';
+import ConsultationFeedback from '../screens/ConsultationFeedback';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,8 +31,9 @@ export default function AppNavigator() {
         <Stack.Screen name="ManualEntry" component={ManualEntry} />
         <Stack.Screen name="OtpVerification" component={OtpVerification} />
         <Stack.Screen name="BookingConfirmation" component={BookingConfirmation} /> */}
-        <Stack.Screen name="BottomNav" component={BottomTabs} options={{ headerShown: false }} />
-        <Stack.Screen name="ChatConsultation" component={ChatConsultation} options={{ headerShown: false }} />
+        {/* <Stack.Screen name="BottomNav" component={BottomTabs} options={{ headerShown: false }} />
+        <Stack.Screen name="ChatConsultation" component={ChatConsultation} options={{ headerShown: false }} /> */}
+        <Stack.Screen name="ConsultationFeedback" component={ConsultationFeedback} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
