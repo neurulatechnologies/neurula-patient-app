@@ -168,7 +168,7 @@ export default function VideoCallScreen() {
                         hitSlop={10}
                         accessibilityLabel="Toggle microphone"
                     >
-                        {muted ? <MicOff size={20} color="#1F104A" /> : <Mic size={20} color="#1F104A" />}
+                        {muted ? <MicOff size={18} color="#1F104A" /> : <Mic size={18} color="#1F104A" />}
                     </Pressable>
 
                     <Pressable
@@ -177,7 +177,7 @@ export default function VideoCallScreen() {
                         hitSlop={10}
                         accessibilityLabel="Toggle camera"
                     >
-                        {cameraOn ? <Video size={20} color="#1F104A" /> : <VideoOff size={20} color="#1F104A" />}
+                        {cameraOn ? <Video size={18} color="#1F104A" /> : <VideoOff size={18} color="#1F104A" />}
                     </Pressable>
 
                     <Pressable
@@ -186,7 +186,7 @@ export default function VideoCallScreen() {
                         hitSlop={10}
                         accessibilityLabel="Hang up"
                     >
-                        <PhoneOff size={22} color="#fff" />
+                        <PhoneOff size={20} color="#fff" />
                     </Pressable>
 
                     <Pressable
@@ -195,7 +195,7 @@ export default function VideoCallScreen() {
                         hitSlop={10}
                         accessibilityLabel="Toggle speaker"
                     >
-                        {speakerOn ? <Volume2 size={20} color="#1F104A" /> : <VolumeX size={20} color="#1F104A" />}
+                        {speakerOn ? <Volume2 size={18} color="#1F104A" /> : <VolumeX size={18} color="#1F104A" />}
                     </Pressable>
 
                     <Pressable
@@ -212,7 +212,7 @@ export default function VideoCallScreen() {
                         hitSlop={10}
                         accessibilityLabel="Open chat"
                     >
-                        <MessageSquare size={20} color="#1F104A" />
+                        <MessageSquare size={18} color="#1F104A" />
                     </Pressable>
                 </View>
             </Animated.View>
@@ -345,8 +345,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         backgroundColor: 'rgba(250,250,250,0.9)',
         borderRadius: 40,
-        paddingVertical: 10,
-        paddingHorizontal: 16,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
         width: '100%',
         shadowColor: '#000',
         shadowOpacity: 0.06,
@@ -357,24 +357,24 @@ const styles = StyleSheet.create({
 
     /* icon buttons */
     controlBtn: {
-        width: 56,
-        height: 56,
-        borderRadius: 28,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         backgroundColor: 'rgba(255,255,255,0.95)',
         alignItems: 'center',
         justifyContent: 'center',
-        marginHorizontal: 4,
+        marginHorizontal: 3,
     },
 
     /* hangup button */
     hangupBtn: {
-        width: 66,
-        height: 66,
-        borderRadius: 34,
+        width: 54,
+        height: 54,
+        borderRadius: 27,
         backgroundColor: '#F43F5E', // red
         alignItems: 'center',
         justifyContent: 'center',
-        marginHorizontal: 6,
+        marginHorizontal: 4,
         shadowColor: '#F43F5E',
         shadowOpacity: 0.36,
         shadowRadius: 12,
