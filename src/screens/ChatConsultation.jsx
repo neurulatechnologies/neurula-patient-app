@@ -26,6 +26,7 @@ import {
 } from 'lucide-react-native';
 import { colors, spacing, typography } from '../theme';
 import Button from '../components/Button';
+import FloatingVideoCall from '../components/FloatingVideoCall';
 
 // assets
 const BG_WATERMARK = require('../../assets/background.png');
@@ -127,7 +128,11 @@ export default function ChatConsultation() {
                     <Pressable style={styles.headerIcon} hitSlop={8}>
                         <Phone size={20} color="#000" />
                     </Pressable>
-                    <Pressable style={styles.headerIcon} hitSlop={8}>
+                    <Pressable
+                        style={styles.headerIcon}
+                        hitSlop={8}
+                        onPress={() => navigation.navigate('VideoCallScreen', { doctor })}
+                    >
                         <Video size={20} color="#000" />
                     </Pressable>
                     <Pressable style={styles.headerIcon} hitSlop={8}>
@@ -188,6 +193,9 @@ export default function ChatConsultation() {
                     </Pressable>
                 </View>
             </KeyboardAvoidingView>
+
+            {/* Floating video call overlay */}
+            <FloatingVideoCall />
         </SafeAreaView>
     );
 }
