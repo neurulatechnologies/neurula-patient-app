@@ -34,7 +34,7 @@ export default function AppNavigator() {
         <Stack.Screen name="BookingConfirmation" component={BookingConfirmation} /> */}
         {/* <Stack.Screen name="BottomNav" component={BottomTabs} options={{ headerShown: false }} /> */}
         <Stack.Screen name="ChatConsultation" component={ChatConsultation} options={{ headerShown: false }} />
-        {/* <Stack.Screen name="ConsultationFeedback" component={ConsultationFeedback} options={{ headerShown: false }} /> */}
+        <Stack.Screen name="ConsultationFeedback" component={ConsultationFeedback} options={{ headerShown: false }} />
         <Stack.Screen name="VideoCallScreen" component={VideoCallScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>

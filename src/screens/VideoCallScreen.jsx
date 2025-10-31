@@ -96,7 +96,15 @@ export default function VideoCallScreen() {
     const hangup = () => {
         setCallActive(false);
         endVideoCall();
-        navigation.goBack();
+
+        // Get doctor info to pass to feedback screen
+        const doctor = route.params?.doctor || { name: 'Dr Michael Chen', title: 'General Physician' };
+
+        // Navigate to feedback screen
+        navigation.navigate('ConsultationFeedback', {
+            doctor,
+            consultationId: route.params?.consultationId || null,
+        });
     };
 
     // TODO: Replace the Image background with your remote video view when wiring real video:
