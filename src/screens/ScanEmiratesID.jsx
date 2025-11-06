@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { CameraView, Camera } from 'expo-camera';
 import { colors, typography, spacing } from '../theme';
 import { Button, Icon } from '../components';
+import { scanEmiratesID } from '../services/ocrService';
 
 export default function ScanEmiratesID() {
     const navigation = useNavigation();
@@ -64,27 +65,37 @@ export default function ScanEmiratesID() {
                 setCapturing(false);
                 setProcessing(true);
 
-                // Simulate OCR processing delay
-                await new Promise(resolve => setTimeout(resolve, 2500));
+                // Call OCR API to process Emirates ID
+                const result = await scanEmiratesID(photo.uri);
 
-                // Navigate to OCR Review with the captured image
-                navigation.navigate('OCRReview', {
-                    source: 'emirates-id',
-                    // For now, using stubbed data - replace with actual OCR processing
-                    extracted: {
-                        full_name: 'Sourav Test',
-                        emirates_id: '784-1987-1234567-1',
-                        nationality: 'India',
-                        date_of_birth: '1998-03-14',
-                        sex: 'M',
-                        expiry: '2028-05-31',
-                    },
-                    imageUri: photo.uri,
-                });
+                if (result.success && result.extracted) {
+                    // Navigate to OCR Review with the extracted data
+                    navigation.navigate('OCRReview', {
+                        source: 'emirates-id',
+                        extracted: result.extracted,
+                        imageUri: photo.uri,
+                        confidence: result.confidence,
+                    });
+                } else {
+                    throw new Error('Failed to extract data from Emirates ID');
+                }
             }
         } catch (error) {
-            console.error('Error capturing photo:', error);
-            Alert.alert('Error', 'Failed to capture photo. Please try again.');
+            console.error('Error processing Emirates ID:', error);
+
+            // Show user-friendly error message
+            Alert.alert(
+                'Processing Failed',
+                error.message || 'Failed to process Emirates ID. Please ensure the document is clearly visible and try again.',
+                [
+                    { text: 'Try Again', style: 'default' },
+                    {
+                        text: 'Enter Manually',
+                        style: 'cancel',
+                        onPress: handleManual,
+                    },
+                ]
+            );
         } finally {
             setCapturing(false);
             setProcessing(false);

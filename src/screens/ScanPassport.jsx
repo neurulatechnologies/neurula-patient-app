@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { CameraView, Camera } from 'expo-camera';
 import { colors, typography, spacing } from '../theme';
 import { Button, Icon } from '../components';
+import { scanPassport } from '../services/ocrService';
 
 export default function ScanPassport() {
     const navigation = useNavigation();
@@ -64,31 +65,37 @@ export default function ScanPassport() {
                 setCapturing(false);
                 setProcessing(true);
 
-                // Simulate OCR processing delay
-                await new Promise(resolve => setTimeout(resolve, 2500));
+                // Call OCR API to process Passport
+                const result = await scanPassport(photo.uri);
 
-                // Navigate to OCR Review with the captured passport image
-                navigation.navigate('OCRReview', {
-                    source: 'passport',
-                    // Passport-specific extracted data structure
-                    extracted: {
-                        full_name: 'John Smith',
-                        passport_number: 'A12345678',
-                        nationality: 'United States',
-                        date_of_birth: '1990-05-15',
-                        place_of_birth: 'New York, USA',
-                        gender: 'M',
-                        issue_date: '2020-03-10',
-                        expiry_date: '2030-03-10',
-                        issuing_country: 'United States',
-                        issuing_authority: 'U.S. Department of State',
-                    },
-                    imageUri: photo.uri,
-                });
+                if (result.success && result.extracted) {
+                    // Navigate to OCR Review with the extracted data
+                    navigation.navigate('OCRReview', {
+                        source: 'passport',
+                        extracted: result.extracted,
+                        imageUri: photo.uri,
+                        confidence: result.confidence,
+                    });
+                } else {
+                    throw new Error('Failed to extract data from Passport');
+                }
             }
         } catch (error) {
-            console.error('Error capturing photo:', error);
-            Alert.alert('Error', 'Failed to capture passport photo. Please try again.');
+            console.error('Error processing Passport:', error);
+
+            // Show user-friendly error message
+            Alert.alert(
+                'Processing Failed',
+                error.message || 'Failed to process Passport. Please ensure the document is clearly visible and try again.',
+                [
+                    { text: 'Try Again', style: 'default' },
+                    {
+                        text: 'Enter Manually',
+                        style: 'cancel',
+                        onPress: handleManual,
+                    },
+                ]
+            );
         } finally {
             setCapturing(false);
             setProcessing(false);
