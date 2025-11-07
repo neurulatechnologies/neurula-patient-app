@@ -5,14 +5,23 @@
  * base URLs, endpoints, and timeout settings.
  */
 
-// In production, these should come from environment variables
+// Backend API configuration
+// NOTE: React Native doesn't read .env files automatically
+// Using IP address instead of localhost for React Native compatibility
 export const API_CONFIG = {
-    BASE_URL: process.env.API_BASE_URL || 'https://your-api-domain.com/api',
+    BASE_URL: 'http://172.27.140.80:8000', // OCR backend URL (WSL2 IP)
     TIMEOUT: 30000, // 30 seconds
     ENDPOINTS: {
+        // OCR endpoints
         OCR_SCAN: '/ocr/scan',
         EMIRATES_ID: '/ocr/emirates-id',
         PASSPORT: '/ocr/passport',
+
+        // Registration endpoints
+        REGISTER_EMIRATES_ID: '/registration/emirates-id/manual',
+        REGISTER_PASSPORT: '/registration/passport/manual',
+        GET_EMIRATES_ID: '/registration/emirates-id',
+        GET_PASSPORT: '/registration/passport',
     },
 };
 

@@ -46,13 +46,25 @@ export default function ScanEmiratesID() {
     // Handle camera capture
     const handleCapture = async () => {
         if (!cameraReady || capturing || processing || !cameraRef.current) {
+            console.log('[ScanEmiratesID] Capture blocked:', {
+                cameraReady,
+                capturing,
+                processing,
+                hasRef: !!cameraRef.current,
+            });
             return;
         }
 
+        console.log('\n═══════════════════════════════════════');
+        console.log('📷 [ScanEmiratesID] Starting capture process');
+        console.log('═══════════════════════════════════════');
+
         try {
             // Phase 1: Capturing
+            console.log('[Phase 1/2] 📸 Capturing image...');
             setCapturing(true);
 
+            const captureStartTime = Date.now();
             // Take picture
             const photo = await cameraRef.current.takePictureAsync({
                 quality: 0.8,
@@ -60,33 +72,79 @@ export default function ScanEmiratesID() {
                 skipProcessing: false,
             });
 
+            const captureTime = Date.now() - captureStartTime;
+            console.log(`✅ Image captured in ${captureTime}ms`);
+
             if (photo && photo.uri) {
+                console.log('Image details:', {
+                    uri: photo.uri.substring(0, 50) + '...',
+                    width: photo.width,
+                    height: photo.height,
+                });
+
                 // Phase 2: Processing
+                console.log('\n[Phase 2/2] 🔄 Processing Emirates ID...');
                 setCapturing(false);
                 setProcessing(true);
 
+                const processStartTime = Date.now();
                 // Call OCR API to process Emirates ID
                 const result = await scanEmiratesID(photo.uri);
 
+                const processTime = Date.now() - processStartTime;
+                console.log(`✅ Processing completed in ${processTime}ms`);
+
                 if (result.success && result.extracted) {
+                    console.log('✅ Extraction successful');
+                    console.log('Extracted data fields:', Object.keys(result.extracted));
+                    console.log('Confidence:', result.confidence);
+                    console.log('Request ID:', result.requestId);
+
+                    const totalTime = Date.now() - captureStartTime;
+                    console.log('\n═══════════════════════════════════════');
+                    console.log(`✅ Total operation time: ${totalTime}ms`);
+                    console.log('═══════════════════════════════════════\n');
+
                     // Navigate to OCR Review with the extracted data
                     navigation.navigate('OCRReview', {
                         source: 'emirates-id',
                         extracted: result.extracted,
                         imageUri: photo.uri,
                         confidence: result.confidence,
+                        requestId: result.requestId,
                     });
                 } else {
                     throw new Error('Failed to extract data from Emirates ID');
                 }
             }
         } catch (error) {
-            console.error('Error processing Emirates ID:', error);
+            console.error('\n═══════════════════════════════════════');
+            console.error('❌ [ScanEmiratesID] Capture/Processing failed');
+            console.error('Error:', error);
+            console.error('═══════════════════════════════════════\n');
+
+            // Extract error details for better user messaging
+            const errorCode = error.code || 'UNKNOWN';
+            const errorTitle = error.userMessage || 'Processing Failed';
+            const errorMessage = error.message || 'Failed to process Emirates ID. Please try again.';
+
+            // Build alert message with actionable steps if available
+            let fullMessage = errorMessage;
+            if (error.actionableSteps && error.actionableSteps.length > 0) {
+                fullMessage += '\n\nSuggestions:\n' + error.actionableSteps.map((step, i) => `${i + 1}. ${step}`).join('\n');
+            }
+
+            // Add request ID for support if available
+            if (error.requestId) {
+                fullMessage += `\n\nReference ID: ${error.requestId}`;
+            }
+
+            console.log('Showing error alert:', { errorCode, errorTitle, fullMessage });
 
             // Show user-friendly error message
             Alert.alert(
-                'Processing Failed',
-                error.message || 'Failed to process Emirates ID. Please ensure the document is clearly visible and try again.',
+                errorTitle,
+                fullMessage,
                 [
                     { text: 'Try Again', style: 'default' },
                     {
