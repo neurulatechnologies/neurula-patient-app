@@ -10,8 +10,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Backend API configuration
 // NOTE: React Native doesn't read .env files automatically
 // Using IP address instead of localhost for React Native compatibility
+//
+// For Android Emulator: Use 10.0.2.2 (maps to host's localhost)
+// For Physical Device: Use your Windows machine's IP address
+// For iOS Simulator: Use localhost
 export const API_CONFIG = {
-    BASE_URL: 'http://172.27.140.80:8080', // OCR backend URL (WSL2 IP)
+    BASE_URL: 'http://10.0.2.2:8080', // Android Emulator → Host machine (WSL2 backend on port 8080)
     TIMEOUT: 30000, // 30 seconds
     ENDPOINTS: {
         // OCR endpoints
