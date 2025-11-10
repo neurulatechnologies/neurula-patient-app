@@ -6,11 +6,14 @@ import {
   Text,
   ScrollView,
   Image,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { colors, typography, spacing } from '../theme';
 import { TextField, Button, Icon } from '../components';
+import { useAuth } from '../context/AuthContext';
 
 // Replace with your actual assets
 const LOGO_IMAGE = require('../../assets/logo.png');
@@ -18,14 +21,75 @@ const BG_WATERMARK = require('../../assets/background.png');
 
 export default function Login() {
   const navigation = useNavigation();
+  const { login, loading } = useAuth();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const handleContinue = () => {
-    // why: demo navigation; wire to your auth flow
-    navigation.navigate('FirstScreen');
+  // Validate form inputs
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!username.trim()) {
+      newErrors.username = 'Email or phone number is required';
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleContinue = async () => {
+    // Clear previous errors
+    setErrors({});
+
+    // Validate inputs
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      // Call login function from AuthContext
+      const response = await login(username.trim(), password);
+
+      if (response.success) {
+        // Success - navigation will be handled by AppNavigator based on auth state
+        Alert.alert(
+          'Success',
+          'Login successful!',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.reset({
+                index: 0,
+                routes: [{ name: 'BottomNav' }],
+              }),
+            },
+          ]
+        );
+      } else {
+        // Show error message
+        Alert.alert(
+          'Login Failed',
+          response.error || 'Invalid credentials. Please try again.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert(
+        'Error',
+        'An unexpected error occurred. Please try again.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   const handleForgot = () => navigation.navigate?.('ForgotPassword');
@@ -56,15 +120,21 @@ export default function Login() {
 
           {/* Username */}
           <TextField
-            label="User name"
+            label="Email or Phone"
             required={true}
             value={username}
-            onChangeText={setUsername}
-            placeholder="Enter your user name"
+            onChangeText={(text) => {
+              setUsername(text);
+              if (errors.username) {
+                setErrors({ ...errors, username: null });
+              }
+            }}
+            placeholder="Enter your email or phone number"
             leftIcon="email"
             autoCapitalize="none"
             keyboardType="default"
             returnKeyType="next"
+            error={errors.username}
           />
 
           {/* Password */}
@@ -72,11 +142,18 @@ export default function Login() {
             label="Password"
             required={true}
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errors.password) {
+                setErrors({ ...errors, password: null });
+              }
+            }}
             placeholder="Enter your password"
             leftIcon="lock"
             secure={true}
             returnKeyType="done"
+            error={errors.password}
+            onSubmitEditing={handleContinue}
           />
 
           {/* Options row */}
@@ -101,11 +178,19 @@ export default function Login() {
           {/* Bottom sticky Login + Create account */}
           <View style={styles.bottomSection}>
             <Button
-              title="Log in"
+              title={loading ? "Logging in..." : "Log in"}
               onPress={handleContinue}
               variant="primary"
               style={styles.loginButton}
+              disabled={loading}
             />
+            {loading && (
+              <ActivityIndicator
+                size="small"
+                color={colors.primary}
+                style={styles.loadingIndicator}
+              />
+            )}
             <View style={styles.createRow}>
               <Text style={styles.newText}>New to Neurula </Text>
               <Pressable onPress={handleCreate} hitSlop={8}>
@@ -231,5 +316,9 @@ const styles = StyleSheet.create({
     ...typography.styles.body,
     color: colors.link,
     // textDecorationLine: 'underline',
+  },
+  loadingIndicator: {
+    marginTop: spacing.sm,
+    alignSelf: 'center',
   },
 });

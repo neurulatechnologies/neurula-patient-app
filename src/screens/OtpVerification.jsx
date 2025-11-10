@@ -9,10 +9,12 @@ import {
     TextInput,
     Image,
     ActivityIndicator,
+    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, typography, spacing } from '../theme';
+import { useAuth } from '../context/AuthContext';
 
 // assets
 const LOGO_IMAGE = require('../../assets/logo.png');          // brand
@@ -24,9 +26,11 @@ const RESEND_SECONDS = 30;
 export default function OtpVerification() {
     const navigation = useNavigation();
     const route = useRoute();
-    const phone =
-        route.params?.phone ||
-        '+1 717 513 1010'; // fallback if param not passed from previous screen
+    const { verifyOtp, resendOtp, login } = useAuth();
+
+    // Get identifier (email) and phone from route params
+    const identifier = route.params?.identifier || '';
+    const phone = route.params?.phone || '+1 717 513 1010'; // fallback
 
     const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
     const [timer, setTimer] = useState(RESEND_SECONDS);
@@ -77,12 +81,39 @@ export default function OtpVerification() {
         }
     };
 
-    const handleResend = () => {
+    const handleResend = async () => {
         if (timer > 0) return;
-        // TODO: call your resend API here
-        setOtp(Array(OTP_LENGTH).fill(''));
-        refs.current[0]?.current?.focus();
-        setTimer(RESEND_SECONDS);
+
+        try {
+            // Call resend OTP API
+            const response = await resendOtp(identifier);
+
+            if (response.success) {
+                // Reset OTP input and timer
+                setOtp(Array(OTP_LENGTH).fill(''));
+                refs.current[0]?.current?.focus();
+                setTimer(RESEND_SECONDS);
+
+                Alert.alert(
+                    'OTP Sent',
+                    'A new OTP has been sent to your email/phone.',
+                    [{ text: 'OK' }]
+                );
+            } else {
+                Alert.alert(
+                    'Resend Failed',
+                    response.error || 'Failed to resend OTP. Please try again.',
+                    [{ text: 'OK' }]
+                );
+            }
+        } catch (error) {
+            console.error('Resend OTP error:', error);
+            Alert.alert(
+                'Error',
+                'An unexpected error occurred. Please try again.',
+                [{ text: 'OK' }]
+            );
+        }
     };
 
     const handleVerify = async () => {
@@ -91,15 +122,42 @@ export default function OtpVerification() {
         setIsLoading(true);
 
         try {
-            // TODO: call your verify API here
-            // Simulate API call delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Call verify OTP API
+            const response = await verifyOtp(identifier, code);
 
-            // On success:
-            navigation.navigate('BottomNav');
+            if (response.success) {
+                // OTP verified successfully
+                Alert.alert(
+                    'Success',
+                    'Your account has been verified successfully!',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => {
+                                // Navigate to Login screen for user to login
+                                navigation.reset({
+                                    index: 0,
+                                    routes: [{ name: 'Login' }],
+                                });
+                            },
+                        },
+                    ]
+                );
+            } else {
+                // Show error
+                Alert.alert(
+                    'Verification Failed',
+                    response.error || 'Invalid OTP. Please try again.',
+                    [{ text: 'OK' }]
+                );
+            }
         } catch (error) {
-            // Handle error (you can add error state/alert here if needed)
-            console.error('Verification failed:', error);
+            console.error('Verification error:', error);
+            Alert.alert(
+                'Error',
+                'An unexpected error occurred. Please try again.',
+                [{ text: 'OK' }]
+            );
         } finally {
             setIsLoading(false);
         }

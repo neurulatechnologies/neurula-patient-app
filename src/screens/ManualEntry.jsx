@@ -10,12 +10,14 @@ import {
     Platform,
     Modal,
     TouchableOpacity,
+    ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import { colors, typography, spacing } from '../theme';
 import { TextField, FieldDropdown, Button } from '../components';
+import { useAuth } from '../context/AuthContext';
 
 // assets (same pattern as other screens)
 const LOGO_IMAGE = require('../../assets/logo.png');          // brand
@@ -33,6 +35,7 @@ const NATIONALITIES = [
 
 export default function ManualEntry() {
     const navigation = useNavigation();
+    const { register, loading } = useAuth();
 
     // form state
     const [fullName, setFullName] = useState('');
@@ -50,6 +53,8 @@ export default function ManualEntry() {
     const [locationPin, setLocationPin] = useState('');
     const [currentLocation, setCurrentLocation] = useState(null);
     const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
 
 
     // simple front-end validation
@@ -80,19 +85,131 @@ export default function ManualEntry() {
         if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Enter a valid email';
         // phone numeric check
         if (contact && !/^[\d+\-\s()]{6,20}$/.test(contact)) e.contact = 'Enter a valid number';
+        // Password validation - match backend requirements
+        if (!password) {
+            e.password = 'Password is required';
+        } else if (password.length < 8) {
+            e.password = 'Password must be at least 8 characters';
+        } else if (!/[A-Z]/.test(password)) {
+            e.password = 'Password must contain at least one uppercase letter';
+        } else if (!/[a-z]/.test(password)) {
+            e.password = 'Password must contain at least one lowercase letter';
+        } else if (!/[0-9]/.test(password)) {
+            e.password = 'Password must contain at least one digit';
+        } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            e.password = 'Password must contain at least one special character';
+        }
+        if (!confirmPassword) e.confirmPassword = 'Confirm password is required';
+        else if (password !== confirmPassword) e.confirmPassword = 'Passwords do not match';
         setErrors(e);
         return !Object.keys(e).length;
     };
 
-    const onComplete = () => {
-        // if (!validate()) return;
-        // TODO: replace with API call; for now navigate with payload
-        navigation.navigate('OtpVerification', {
-            form: {
-                fullName, dob: dobText, nationality, emiratesId, height, weight, medical,
-                contact, emirate, address, locationPin, email,
-            },
-        });
+    const onComplete = async () => {
+        // Clear previous errors
+        setErrors({});
+
+        // Validate form
+        if (!validate()) {
+            Alert.alert('Validation Error', 'Please fix the errors in the form');
+            return;
+        }
+
+        try {
+            // Format phone number for UAE format (+971XXXXXXXXX)
+            let formattedPhone = contact.trim();
+
+            // Remove all non-digit characters except leading +
+            formattedPhone = formattedPhone.replace(/[^\d+]/g, '');
+
+            // Handle different input formats
+            if (formattedPhone.startsWith('+971')) {
+                // Already has +971, keep as is
+            } else if (formattedPhone.startsWith('971')) {
+                // Has 971 without +, add +
+                formattedPhone = '+' + formattedPhone;
+            } else if (formattedPhone.startsWith('0')) {
+                // Starts with 0 (local format), replace with +971
+                formattedPhone = '+971' + formattedPhone.substring(1);
+            } else if (formattedPhone.startsWith('+')) {
+                // Has + but not +971, keep as is (will fail validation)
+                formattedPhone = formattedPhone;
+            } else {
+                // Just digits, add +971
+                formattedPhone = '+971' + formattedPhone;
+            }
+
+            // Ensure exactly 9 digits after +971 (remove excess digits)
+            if (formattedPhone.startsWith('+971') && formattedPhone.length > 13) {
+                formattedPhone = formattedPhone.substring(0, 13); // +971 + 9 digits = 13 chars
+                console.warn('⚠️ Phone number truncated to 9 digits after +971');
+            }
+
+            // Format date from yyyy/mm/dd to yyyy-mm-dd
+            const formattedDate = dobText ? dobText.replace(/\//g, '-') : null;
+
+            console.log('📝 Preparing registration data...');
+            console.log('   Phone (original):', contact.trim());
+            console.log('   Phone (formatted):', formattedPhone);
+            console.log('   Date (original):', dobText);
+            console.log('   Date (formatted):', formattedDate);
+
+            // Prepare registration data
+            const registrationData = {
+                full_name: fullName.trim(),
+                email: email.trim(),
+                phone: formattedPhone,
+                password: password,
+                registration_method: 'manual', // REQUIRED field!
+                date_of_birth: formattedDate,
+                nationality: nationality || null,
+            };
+
+            // Add optional fields
+            if (emiratesId) registrationData.emirates_id = emiratesId;
+            if (height) registrationData.height = parseFloat(height);
+            if (weight) registrationData.weight = parseFloat(weight);
+            if (medical) registrationData.medical_conditions = medical;
+            if (emirate) registrationData.emirate = emirate;
+            if (address) registrationData.address = address;
+            if (locationPin) registrationData.location_pin = locationPin;
+
+            console.log('📤 Sending registration data:', registrationData);
+
+            // Call registration API
+            const response = await register(registrationData);
+
+            if (response.success) {
+                // Navigate to OTP verification screen
+                Alert.alert(
+                    'Registration Successful',
+                    'Please check your email or phone for the OTP code.',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => navigation.navigate('OtpVerification', {
+                                identifier: email.trim(), // Use email as identifier
+                                phone: contact.trim(),
+                            }),
+                        },
+                    ]
+                );
+            } else {
+                // Show error
+                Alert.alert(
+                    'Registration Failed',
+                    response.error || 'Unable to register. Please try again.',
+                    [{ text: 'OK' }]
+                );
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            Alert.alert(
+                'Error',
+                'An unexpected error occurred. Please try again.',
+                [{ text: 'OK' }]
+            );
+        }
     };
 
     const onCancel = () => navigation.goBack();
@@ -439,14 +556,47 @@ export default function ManualEntry() {
                         error={errors.email}
                     />
 
+                    {/* Password */}
+                    <TextField
+                        label="Password"
+                        required={true}
+                        value={password}
+                        onChangeText={setPassword}
+                        placeholder="Enter your password"
+                        leftIcon="lock"
+                        secure={true}
+                        error={errors.password}
+                        helperText="Min 8 chars: uppercase, lowercase, digit, special character"
+                    />
+
+                    {/* Confirm Password */}
+                    <TextField
+                        label="Confirm Password"
+                        required={true}
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        placeholder="Confirm your password"
+                        leftIcon="lock"
+                        secure={true}
+                        error={errors.confirmPassword}
+                    />
+
                     {/* Actions */}
                     <View style={styles.bottomSection}>
                         <Button
-                            title="Complete Registration"
+                            title={loading ? "Registering..." : "Complete Registration"}
                             onPress={onComplete}
                             variant="primary"
                             size="large"
+                            disabled={loading}
                         />
+                        {loading && (
+                            <ActivityIndicator
+                                size="small"
+                                color={colors.primary}
+                                style={{ marginTop: spacing.sm }}
+                            />
+                        )}
 
                         <Button
                             title="Cancel"
