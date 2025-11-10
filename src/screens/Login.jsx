@@ -54,7 +54,7 @@ export default function Login() {
     if (!validateForm()) {
       return;
     }
-
+    console.log("validation done")
     try {
       // Call login function from AuthContext
       const response = await login(username.trim(), password);
