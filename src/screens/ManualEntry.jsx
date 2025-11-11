@@ -38,6 +38,53 @@ const NATIONALITIES = [
     'Nepal', 'Sri Lanka', 'Egypt', 'Nigeria', 'United Kingdom',
 ];
 
+const COUNTRY_CODES = [
+    '+971 (UAE)',
+    '+1 (USA)',
+    '+91 (India)',
+    '+92 (Pakistan)',
+    '+880 (Bangladesh)',
+    '+63 (Philippines)',
+    '+977 (Nepal)',
+    '+94 (Sri Lanka)',
+    '+20 (Egypt)',
+    '+44 (UK)',
+];
+
+// Google Maps API Key for static map preview
+// Replace with your actual API key from https://console.cloud.google.com
+const GOOGLE_MAPS_API_KEY = 'AIzaSyDMEzYdB9YOgT0p6F8TyKz3Y9fX_example'; // TODO: Replace with actual API key
+
+/**
+ * Format phone number with spaces: 50 123 4567
+ */
+const formatPhoneNumber = (text) => {
+    const cleaned = text.replace(/\D/g, '');
+    if (cleaned.length <= 2) return cleaned;
+    if (cleaned.length <= 5) return `${cleaned.slice(0, 2)} ${cleaned.slice(2)}`;
+    return `${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(5, 9)}`;
+};
+
+/**
+ * Format Emirates ID with dashes: 784-XXX-XXXXXXX-X
+ */
+const formatEmiratesId = (text) => {
+    // Remove non-digits and ensure it starts with 784
+    const cleaned = text.replace(/\D/g, '');
+
+    // Don't format if empty
+    if (!cleaned) return '';
+
+    // Add 784 prefix if not present
+    const withPrefix = cleaned.startsWith('784') ? cleaned : '784' + cleaned;
+
+    // Format with dashes: 784-XXXX-XXXXXXX-X (15 digits total)
+    if (withPrefix.length <= 3) return withPrefix;
+    if (withPrefix.length <= 7) return `${withPrefix.slice(0, 3)}-${withPrefix.slice(3)}`;
+    if (withPrefix.length <= 14) return `${withPrefix.slice(0, 3)}-${withPrefix.slice(3, 7)}-${withPrefix.slice(7)}`;
+    return `${withPrefix.slice(0, 3)}-${withPrefix.slice(3, 7)}-${withPrefix.slice(7, 14)}-${withPrefix.slice(14, 15)}`;
+};
+
 export default function ManualEntry() {
     const navigation = useNavigation();
     const { register, loading } = useAuth();
@@ -52,6 +99,7 @@ export default function ManualEntry() {
     const [height, setHeight] = useState('');
     const [weight, setWeight] = useState('');
     const [medical, setMedical] = useState('');
+    const [countryCode, setCountryCode] = useState('+971');
     const [contact, setContact] = useState('');
     const [emirate, setEmirate] = useState('');
     const [address, setAddress] = useState('');
@@ -78,18 +126,22 @@ export default function ManualEntry() {
         if (!dobText.trim()) e.dob = 'Date of birth is required';
         if (!nationality.trim()) e.nationality = 'Select nationality';
         // Emirates ID validation - must start with 784 and be 15 digits total
-        if (emiratesId && !/^784\d{12}$/.test(emiratesId)) {
-            e.emiratesId = 'Emirates ID must start with 784 and be 15 digits total';
+        const cleanedEmiratesId = emiratesId.replace(/\D/g, '');
+        if (emiratesId && !/^784\d{12}$/.test(cleanedEmiratesId)) {
+            e.emiratesId = 'Emirates ID must be 15 digits total (784 + 12 digits)';
         }
         if (!contact.trim()) e.contact = 'Contact is required';
+        // Phone validation - UAE format (9 digits)
+        const cleanedContact = contact.replace(/\D/g, '');
+        if (contact && cleanedContact.length !== 9) {
+            e.contact = 'Enter a valid 9-digit mobile number';
+        }
         if (!emirate.trim()) e.emirate = 'Select emirate';
         if (!address.trim()) e.address = 'Address is required';
         if (!locationPin.trim()) e.locationPin = 'Location pin is required';
         if (!email.trim()) e.email = 'Email is required';
         // Enhanced email validation
         if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Enter a valid email';
-        // phone numeric check
-        if (contact && !/^[\d+\-\s()]{6,20}$/.test(contact)) e.contact = 'Enter a valid number';
         // Password validation - match backend requirements
         if (!password) {
             e.password = 'Password is required';
@@ -121,34 +173,12 @@ export default function ManualEntry() {
         }
 
         try {
-            // Format phone number for UAE format (+971XXXXXXXXX)
-            let formattedPhone = contact.trim();
+            // Extract country code from dropdown (e.g., "+971 (UAE)" -> "+971")
+            const selectedCode = countryCode.split(' ')[0];
 
-            // Remove all non-digit characters except leading +
-            formattedPhone = formattedPhone.replace(/[^\d+]/g, '');
-
-            // Handle different input formats
-            if (formattedPhone.startsWith('+971')) {
-                // Already has +971, keep as is
-            } else if (formattedPhone.startsWith('971')) {
-                // Has 971 without +, add +
-                formattedPhone = '+' + formattedPhone;
-            } else if (formattedPhone.startsWith('0')) {
-                // Starts with 0 (local format), replace with +971
-                formattedPhone = '+971' + formattedPhone.substring(1);
-            } else if (formattedPhone.startsWith('+')) {
-                // Has + but not +971, keep as is (will fail validation)
-                formattedPhone = formattedPhone;
-            } else {
-                // Just digits, add +971
-                formattedPhone = '+971' + formattedPhone;
-            }
-
-            // Ensure exactly 9 digits after +971 (remove excess digits)
-            if (formattedPhone.startsWith('+971') && formattedPhone.length > 13) {
-                formattedPhone = formattedPhone.substring(0, 13); // +971 + 9 digits = 13 chars
-                console.warn('⚠️ Phone number truncated to 9 digits after +971');
-            }
+            // Format phone number with selected country code
+            const cleanedPhone = contact.replace(/\D/g, ''); // Remove all non-digits
+            const formattedPhone = selectedCode + cleanedPhone;
 
             // Format date from yyyy/mm/dd to yyyy-mm-dd
             const formattedDate = dobText ? dobText.replace(/\//g, '-') : null;
@@ -171,7 +201,7 @@ export default function ManualEntry() {
             };
 
             // Add optional fields
-            if (emiratesId) registrationData.emirates_id = emiratesId;
+            if (emiratesId) registrationData.emirates_id = emiratesId.replace(/\D/g, ''); // Remove dashes before sending
             if (height) registrationData.height = parseFloat(height);
             if (weight) registrationData.weight = parseFloat(weight);
             if (medical) registrationData.medical_conditions = medical;
@@ -444,12 +474,13 @@ export default function ManualEntry() {
                     <TextField
                         label="Emirates ID Number"
                         value={emiratesId}
-                        onChangeText={setEmiratesId}
-                        placeholder="784-XXX-XXXXXX-X"
+                        onChangeText={(text) => setEmiratesId(formatEmiratesId(text))}
+                        placeholder="784-XXXX-XXXXXXX-X"
                         rightIcon="search"
                         onRightIconPress={() => {/* TODO: Add search functionality */ }}
                         keyboardType="numeric"
-                        helperText="Must start with 784 and be 15 digits total"
+                        maxLength={18}
+                        helperText="784 prefix auto-added. Enter 12 remaining digits"
                         error={errors.emiratesId}
                     />
 
@@ -487,16 +518,36 @@ export default function ManualEntry() {
                         style={{ height: 120 }}
                     />
 
-                    {/* Contact */}
-                    <TextField
-                        label="Contact"
-                        required={true}
-                        value={contact}
-                        onChangeText={setContact}
-                        placeholder="Enter your contact number"
-                        keyboardType="phone-pad"
-                        error={errors.contact}
-                    />
+                    {/* Contact - Country Code + Phone Number */}
+                    <View>
+                        <Text style={[styles.fieldLabel, { marginBottom: spacing.xs }]}>
+                            Contact <Text style={{ color: colors.error }}>*</Text>
+                        </Text>
+                        <View style={styles.row2}>
+                            <View style={[styles.col, { marginRight: spacing.sm, flex: 0.4 }]}>
+                                <FieldDropdown
+                                    value={countryCode}
+                                    onValueChange={setCountryCode}
+                                    placeholder="+971"
+                                    options={COUNTRY_CODES}
+                                    style={{ marginBottom: 0 }}
+                                />
+                            </View>
+                            <View style={[styles.col, { marginLeft: spacing.sm, flex: 0.6 }]}>
+                                <TextField
+                                    value={contact}
+                                    onChangeText={(text) => setContact(formatPhoneNumber(text))}
+                                    placeholder="50 123 4567"
+                                    keyboardType="phone-pad"
+                                    maxLength={12}
+                                    style={{ marginBottom: 0 }}
+                                />
+                            </View>
+                        </View>
+                        {errors.contact ? (
+                            <Text style={styles.errorText}>{errors.contact}</Text>
+                        ) : null}
+                    </View>
 
                     {/* Emirates (dropdown) */}
                     <FieldDropdown
@@ -532,10 +583,19 @@ export default function ManualEntry() {
                         helperText="Tap pin icon to get current location"
                     />
 
-                    {/* Map preview placeholder */}
+                    {/* Map preview with Google Maps Static API */}
                     <View style={styles.mapPreview}>
-                        {/* TODO: replace with <MapView> or a static map snapshot */}
-                        <Text style={styles.mapGhost}>Map preview</Text>
+                        {currentLocation ? (
+                            <Image
+                                source={{
+                                    uri: `https://maps.googleapis.com/maps/api/staticmap?center=${currentLocation.latitude},${currentLocation.longitude}&zoom=15&size=350x130&markers=color:red%7C${currentLocation.latitude},${currentLocation.longitude}&key=${GOOGLE_MAPS_API_KEY}`,
+                                }}
+                                style={styles.mapImage}
+                                resizeMode="cover"
+                            />
+                        ) : (
+                            <Text style={styles.mapGhost}>Tap pin icon to show map</Text>
+                        )}
                     </View>
 
                     {/* Email Address */}
@@ -674,8 +734,25 @@ const styles = StyleSheet.create({
     row2: { flexDirection: 'row' },
     col: { flex: 1 },
 
+    /* Custom field label for compound fields */
+    fieldLabel: {
+        fontFamily: 'Poppins_500Medium',
+        fontSize: 14,
+        lineHeight: 20,
+        color: colors.text,
+        marginBottom: spacing.xs,
+    },
 
-    /* map preview placeholder */
+    /* Custom error text for compound fields */
+    errorText: {
+        fontFamily: 'Poppins_400Regular',
+        fontSize: 12,
+        lineHeight: 16,
+        color: colors.error,
+        marginTop: spacing.xs,
+    },
+
+    /* map preview */
     mapPreview: {
         height: 130,
         borderRadius: spacing.borderRadius.lg,
@@ -692,6 +769,10 @@ const styles = StyleSheet.create({
         marginBottom: spacing.md,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    mapImage: {
+        width: '100%',
+        height: '100%',
     },
     mapGhost: {
         fontFamily: 'Poppins_400Regular',
