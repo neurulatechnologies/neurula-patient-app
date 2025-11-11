@@ -15,7 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // For Physical Device: Use your Windows machine's IP address
 // For iOS Simulator: Use localhost
 export const API_CONFIG = {
-    BASE_URL: 'http://192.168.0.106:8000/', // Physical Device → Windows host IP (WSL2 backend on port 8000)
+    BASE_URL: 'http://192.168.0.106:8000', // Physical Device → Windows host IP (WSL2 backend on port 8000)
     TIMEOUT: 30000, // 30 seconds
     ENDPOINTS: {
         // OCR endpoints

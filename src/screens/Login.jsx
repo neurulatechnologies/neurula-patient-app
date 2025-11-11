@@ -6,7 +6,6 @@ import {
   Text,
   ScrollView,
   Image,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +13,12 @@ import { useNavigation } from '@react-navigation/native';
 import { colors, typography, spacing } from '../theme';
 import { TextField, Button, Icon } from '../components';
 import { useAuth } from '../context/AuthContext';
+import {
+  showLoginSuccess,
+  handleAuthError,
+  showAccountNotVerifiedError,
+  showNetworkError
+} from '../utils/errorMessages';
 
 // Replace with your actual assets
 const LOGO_IMAGE = require('../../assets/logo.png');
@@ -57,38 +62,34 @@ export default function Login() {
     console.log("validation done")
     try {
       // Call login function from AuthContext
-      const response = await login(username.trim(), password);
+      const response = await login(username.trim(), password, rememberMe);
 
       if (response.success) {
-        // Success - navigation will be handled by AppNavigator based on auth state
-        Alert.alert(
-          'Success',
-          'Login successful!',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.reset({
-                index: 0,
-                routes: [{ name: 'BottomNav' }],
-              }),
-            },
-          ]
-        );
+        // Show success toast
+        showLoginSuccess();
+
+        // Navigate to main app
+        setTimeout(() => {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'BottomNav' }],
+          });
+        }, 500);
       } else {
-        // Show error message
-        Alert.alert(
-          'Login Failed',
-          response.error || 'Invalid credentials. Please try again.',
-          [{ text: 'OK' }]
-        );
+        // Handle specific error cases
+        const errorMsg = response.error || '';
+
+        if (errorMsg.toLowerCase().includes('not verified')) {
+          showAccountNotVerifiedError();
+        } else {
+          // Show generic error with backend message
+          handleAuthError(response, 'login');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);
-      Alert.alert(
-        'Error',
-        'An unexpected error occurred. Please try again.',
-        [{ text: 'OK' }]
-      );
+      // Network or unexpected error
+      showNetworkError();
     }
   };
 

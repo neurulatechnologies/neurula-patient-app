@@ -144,12 +144,12 @@ export const AuthProvider = ({ children }) => {
   /**
    * Login user
    */
-  const login = async (identifier, password) => {
+  const login = async (identifier, password, rememberMe = false) => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await authService.login(identifier, password);
+      const response = await authService.login(identifier, password, rememberMe);
 
       if (response.success) {
         // Update context state

@@ -4,7 +4,6 @@ import {
     StyleSheet,
     Pressable,
     Text,
-    Alert,
     ActivityIndicator,
     Platform,
     Image,
@@ -15,6 +14,7 @@ import { CameraView, Camera } from 'expo-camera';
 import { colors, typography, spacing } from '../theme';
 import { Button, Icon } from '../components';
 import { scanEmiratesID } from '../services/ocrService';
+import { showErrorToast, showSuccessToast } from '../utils/errorMessages';
 
 export default function ScanEmiratesID() {
     const navigation = useNavigation();
@@ -32,7 +32,7 @@ export default function ScanEmiratesID() {
                 setHasPermission(status === 'granted');
             } catch (error) {
                 console.error('Error requesting camera permissions:', error);
-                Alert.alert('Error', 'Failed to request camera permissions');
+                showErrorToast('Error', 'Failed to request camera permissions');
                 setHasPermission(false);
             }
         })();
@@ -139,21 +139,10 @@ export default function ScanEmiratesID() {
                 fullMessage += `\n\nReference ID: ${error.requestId}`;
             }
 
-            console.log('Showing error alert:', { errorCode, errorTitle, fullMessage });
+            console.log('Showing error toast:', { errorCode, errorTitle, fullMessage });
 
-            // Show user-friendly error message
-            Alert.alert(
-                errorTitle,
-                fullMessage,
-                [
-                    { text: 'Try Again', style: 'default' },
-                    {
-                        text: 'Enter Manually',
-                        style: 'cancel',
-                        onPress: handleManual,
-                    },
-                ]
-            );
+            // Show user-friendly error toast
+            showErrorToast(errorTitle, fullMessage, 5000);
         } finally {
             setCapturing(false);
             setProcessing(false);
@@ -173,7 +162,7 @@ export default function ScanEmiratesID() {
             setHasPermission(status === 'granted');
         } catch (error) {
             console.error('Error requesting permissions:', error);
-            Alert.alert('Error', 'Failed to request camera permissions');
+            showErrorToast('Error', 'Failed to request camera permissions');
         }
     };
 

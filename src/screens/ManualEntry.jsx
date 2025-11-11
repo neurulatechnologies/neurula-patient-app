@@ -6,7 +6,6 @@ import {
     Text,
     ScrollView,
     Image,
-    Alert,
     Platform,
     Modal,
     TouchableOpacity,
@@ -18,6 +17,12 @@ import * as Location from 'expo-location';
 import { colors, typography, spacing } from '../theme';
 import { TextField, FieldDropdown, Button } from '../components';
 import { useAuth } from '../context/AuthContext';
+import {
+    showRegistrationSuccess,
+    handleAuthError,
+    showErrorToast,
+    showNetworkError
+} from '../utils/errorMessages';
 
 // assets (same pattern as other screens)
 const LOGO_IMAGE = require('../../assets/logo.png');          // brand
@@ -111,7 +116,7 @@ export default function ManualEntry() {
 
         // Validate form
         if (!validate()) {
-            Alert.alert('Validation Error', 'Please fix the errors in the form');
+            showErrorToast('Validation Error', 'Please fix the errors in the form');
             return;
         }
 
@@ -180,35 +185,24 @@ export default function ManualEntry() {
             const response = await register(registrationData);
 
             if (response.success) {
+                // Show success toast
+                showRegistrationSuccess(email.trim());
+
                 // Navigate to OTP verification screen
-                Alert.alert(
-                    'Registration Successful',
-                    'Please check your email or phone for the OTP code.',
-                    [
-                        {
-                            text: 'OK',
-                            onPress: () => navigation.navigate('OtpVerification', {
-                                identifier: email.trim(), // Use email as identifier
-                                phone: contact.trim(),
-                            }),
-                        },
-                    ]
-                );
+                setTimeout(() => {
+                    navigation.navigate('OtpVerification', {
+                        identifier: email.trim(), // Use email as identifier
+                        phone: contact.trim(),
+                    });
+                }, 1000);
             } else {
-                // Show error
-                Alert.alert(
-                    'Registration Failed',
-                    response.error || 'Unable to register. Please try again.',
-                    [{ text: 'OK' }]
-                );
+                // Show error toast with backend message
+                handleAuthError(response, 'register');
             }
         } catch (error) {
             console.error('Registration error:', error);
-            Alert.alert(
-                'Error',
-                'An unexpected error occurred. Please try again.',
-                [{ text: 'OK' }]
-            );
+            // Network or unexpected error
+            showNetworkError();
         }
     };
 
@@ -260,7 +254,7 @@ export default function ManualEntry() {
         try {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
-                Alert.alert('Permission Denied', 'Permission to access location was denied');
+                showErrorToast('Permission Denied', 'Permission to access location was denied');
                 return;
             }
 
@@ -280,7 +274,7 @@ export default function ManualEntry() {
                 setCurrentLocation({ latitude, longitude });
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to get current location');
+            showErrorToast('Error', 'Failed to get current location');
         }
     };
 

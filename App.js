@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { View, ActivityIndicator } from 'react-native';
+import Toast from 'react-native-toast-message';
 import AppNavigator from './src/navigation/AppNavigator';
 import { VideoCallProvider } from './src/context/VideoCallContext';
 
@@ -23,6 +24,7 @@ export default function App() {
     <VideoCallProvider>
       <StatusBar style="dark" translucent backgroundColor="transparent" />
       <AppNavigator />
+      <Toast />
     </VideoCallProvider>
   );
 }

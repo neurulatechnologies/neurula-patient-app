@@ -4,7 +4,6 @@ import {
     StyleSheet,
     Pressable,
     Text,
-    Alert,
     ActivityIndicator,
     Platform,
     Image,
@@ -15,6 +14,7 @@ import { CameraView, Camera } from 'expo-camera';
 import { colors, typography, spacing } from '../theme';
 import { Button, Icon } from '../components';
 import { scanPassport } from '../services/ocrService';
+import { showErrorToast, showSuccessToast } from '../utils/errorMessages';
 
 export default function ScanPassport() {
     const navigation = useNavigation();
@@ -32,7 +32,7 @@ export default function ScanPassport() {
                 setHasPermission(status === 'granted');
             } catch (error) {
                 console.error('Error requesting camera permissions:', error);
-                Alert.alert('Error', 'Failed to request camera permissions');
+                showErrorToast('Error', 'Failed to request camera permissions');
                 setHasPermission(false);
             }
         })();
@@ -83,18 +83,11 @@ export default function ScanPassport() {
         } catch (error) {
             console.error('Error processing Passport:', error);
 
-            // Show user-friendly error message
-            Alert.alert(
+            // Show user-friendly error toast
+            showErrorToast(
                 'Processing Failed',
                 error.message || 'Failed to process Passport. Please ensure the document is clearly visible and try again.',
-                [
-                    { text: 'Try Again', style: 'default' },
-                    {
-                        text: 'Enter Manually',
-                        style: 'cancel',
-                        onPress: handleManual,
-                    },
-                ]
+                5000
             );
         } finally {
             setCapturing(false);
@@ -115,7 +108,7 @@ export default function ScanPassport() {
             setHasPermission(status === 'granted');
         } catch (error) {
             console.error('Error requesting permissions:', error);
-            Alert.alert('Error', 'Failed to request camera permissions');
+            showErrorToast('Error', 'Failed to request camera permissions');
         }
     };
 

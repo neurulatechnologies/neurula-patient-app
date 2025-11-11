@@ -66,8 +66,14 @@ const makeRequest = async (endpoint, options = {}) => {
     if (!response.ok) {
       console.error('❌ Request failed with status:', response.status);
       console.error('❌ Error details:', data);
-      // Handle specific error cases
-      throw new Error(data.detail || data.message || 'Request failed');
+
+      // Return error with status code for better error handling
+      return {
+        success: false,
+        error: data.detail || data.message || 'Request failed',
+        status: response.status,
+        data: data,
+      };
     }
 
     console.log('✅ Request successful!');
@@ -99,6 +105,7 @@ const makeRequest = async (endpoint, options = {}) => {
     return {
       success: false,
       error: error.message || 'Network request failed',
+      status: null,
     };
   }
 };
@@ -270,11 +277,16 @@ export const resendOtp = async (identifier) => {
  *
  * @param {string} identifier - Email or phone number
  * @param {string} password - Password
+ * @param {boolean} rememberMe - Remember me option (default: false)
  */
-export const login = async (identifier, password) => {
+export const login = async (identifier, password, rememberMe = false) => {
   const response = await makeRequest(AUTH_ENDPOINTS.LOGIN, {
     method: 'POST',
-    body: JSON.stringify({ identifier, password }),
+    body: JSON.stringify({
+      username: identifier,      // Backend expects 'username' field
+      password: password,
+      remember_me: rememberMe    // Send remember_me to backend
+    }),
   });
 
   // Store tokens if login successful

@@ -9,12 +9,19 @@ import {
     TextInput,
     Image,
     ActivityIndicator,
-    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, typography, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
+import {
+    showOtpVerificationSuccess,
+    showOtpResendSuccess,
+    showInvalidOtpError,
+    showErrorToast,
+    handleAuthError,
+    showNetworkError
+} from '../utils/errorMessages';
 
 // assets
 const LOGO_IMAGE = require('../../assets/logo.png');          // brand
@@ -94,25 +101,16 @@ export default function OtpVerification() {
                 refs.current[0]?.current?.focus();
                 setTimer(RESEND_SECONDS);
 
-                Alert.alert(
-                    'OTP Sent',
-                    'A new OTP has been sent to your email/phone.',
-                    [{ text: 'OK' }]
-                );
+                // Show success toast
+                showOtpResendSuccess(identifier);
             } else {
-                Alert.alert(
-                    'Resend Failed',
-                    response.error || 'Failed to resend OTP. Please try again.',
-                    [{ text: 'OK' }]
-                );
+                // Show error toast with backend message
+                handleAuthError(response, 'resend_otp');
             }
         } catch (error) {
             console.error('Resend OTP error:', error);
-            Alert.alert(
-                'Error',
-                'An unexpected error occurred. Please try again.',
-                [{ text: 'OK' }]
-            );
+            // Network or unexpected error
+            showNetworkError();
         }
     };
 
@@ -126,38 +124,33 @@ export default function OtpVerification() {
             const response = await verifyOtp(identifier, code);
 
             if (response.success) {
-                // OTP verified successfully
-                Alert.alert(
-                    'Success',
-                    'Your account has been verified successfully!',
-                    [
-                        {
-                            text: 'OK',
-                            onPress: () => {
-                                // Navigate to Login screen for user to login
-                                navigation.reset({
-                                    index: 0,
-                                    routes: [{ name: 'Login' }],
-                                });
-                            },
-                        },
-                    ]
-                );
+                // Show success toast
+                showOtpVerificationSuccess();
+
+                // Navigate to Login screen after a short delay
+                setTimeout(() => {
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Login' }],
+                    });
+                }, 1500);
             } else {
-                // Show error
-                Alert.alert(
-                    'Verification Failed',
-                    response.error || 'Invalid OTP. Please try again.',
-                    [{ text: 'OK' }]
-                );
+                // Handle specific error cases
+                const errorMsg = response.error || '';
+
+                if (errorMsg.toLowerCase().includes('invalid') || errorMsg.toLowerCase().includes('incorrect')) {
+                    showInvalidOtpError();
+                } else if (errorMsg.toLowerCase().includes('expired')) {
+                    showErrorToast('OTP Expired', 'Your OTP has expired. Please request a new one.');
+                } else {
+                    // Show generic error with backend message
+                    handleAuthError(response, 'verify_otp');
+                }
             }
         } catch (error) {
             console.error('Verification error:', error);
-            Alert.alert(
-                'Error',
-                'An unexpected error occurred. Please try again.',
-                [{ text: 'OK' }]
-            );
+            // Network or unexpected error
+            showNetworkError();
         } finally {
             setIsLoading(false);
         }
