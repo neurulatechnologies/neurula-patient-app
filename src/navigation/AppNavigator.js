@@ -5,6 +5,8 @@ import { AuthProvider } from '../context/AuthContext';
 import { ProtectedRoute } from '../components';
 import Login from '../screens/Login';
 import ForgotPassword from '../screens/ForgotPassword';
+import ForgotPasswordOTP from '../screens/ForgotPasswordOTP';
+import ResetPassword from '../screens/ResetPassword';
 import FirstScreen from '../screens/FirstScreen';
 import CreateAccount from '../screens/createAccount';
 import ScanEmiratesID from '../screens/ScanEmiratesID';
@@ -62,6 +64,8 @@ export default function AppNavigator() {
           <Stack.Screen name="FirstScreen" component={FirstScreen} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+          <Stack.Screen name="ForgotPasswordOTP" component={ForgotPasswordOTP} />
+          <Stack.Screen name="ResetPassword" component={ResetPassword} />
           <Stack.Screen name="CreateAccount" component={CreateAccount} />
           <Stack.Screen name="ScanEmiratesID" component={ScanEmiratesID} />
           <Stack.Screen name="ScanPassport" component={ScanPassport} />

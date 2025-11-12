@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, typography, spacing } from '../theme';
 import { TextField, Button } from '../components';
 import { useAuth } from '../context/AuthContext';
@@ -24,25 +24,35 @@ import {
 const LOGO_IMAGE = require('../../assets/logo.png');
 const BG_WATERMARK = require('../../assets/background.png');
 
-export default function ForgotPassword() {
+export default function ResetPassword() {
   const navigation = useNavigation();
-  const { forgotPassword, loading } = useAuth();
+  const route = useRoute();
+  const { resetPassword, loading } = useAuth();
 
-  const [email, setEmail] = useState('');
+  // Get email and OTP from route params
+  const email = route.params?.email || '';
+  const otp = route.params?.otp || '';
+
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
 
-  // Validate email input
+  // Validate form inputs
   const validateForm = () => {
     const newErrors = {};
 
-    if (!email.trim()) {
-      newErrors.email = 'Email is required';
-    } else {
-      // Basic email validation regex
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
-        newErrors.email = 'Please enter a valid email address';
-      }
+    // Password validation
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+
+    // Confirm password validation
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
@@ -58,33 +68,62 @@ export default function ForgotPassword() {
       return;
     }
 
+    // Validate email and OTP exist
+    if (!email || !otp) {
+      showErrorToast('Invalid Request', 'Email or OTP is missing. Please try again.');
+      navigation.navigate('ForgotPassword');
+      return;
+    }
+
     try {
-      // Call forgotPassword function from AuthContext
-      const response = await forgotPassword(email.trim());
+      // Call resetPassword function from AuthContext
+      const response = await resetPassword(email, otp, password);
 
       if (response.success) {
         // Show success toast
         showSuccessToast(
-          'OTP Sent',
-          'Please check your email for the verification code'
+          'Password Reset Successful',
+          'Your password has been reset. Please login with your new password.'
         );
 
-        // Navigate to OTP verification screen with email parameter
+        // Navigate to Login screen
         setTimeout(() => {
-          navigation.navigate('ForgotPasswordOTP', { email: email.trim() });
-        }, 1000);
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Login' }],
+          });
+        }, 1500);
       } else {
-        // Show error toast
-        handleAuthError(response, 'forgot-password');
+        // Handle specific error cases
+        const errorMsg = response.error || '';
+
+        if (errorMsg.toLowerCase().includes('invalid') || errorMsg.toLowerCase().includes('expired')) {
+          showErrorToast(
+            'Invalid or Expired OTP',
+            'The verification code is invalid or has expired. Please request a new one.'
+          );
+          // Navigate back to ForgotPassword to restart the flow
+          setTimeout(() => {
+            navigation.navigate('ForgotPassword');
+          }, 2000);
+        } else {
+          // Show generic error with backend message
+          handleAuthError(response, 'reset-password');
+        }
       }
     } catch (error) {
-      console.error('Forgot password error:', error);
+      console.error('Reset password error:', error);
       // Network or unexpected error
       showNetworkError();
     }
   };
 
-  const handleBackToLogin = () => navigation.navigate('Login');
+  const handleBackToLogin = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -104,35 +143,59 @@ export default function ForgotPassword() {
 
         {/* Card */}
         <View style={styles.card}>
-          <Text style={styles.title}>Forgot Password</Text>
+          <Text style={styles.title}>Reset Password</Text>
           <Text style={styles.subtitle}>
-            Enter your registered email address and we'll send you a verification code to reset your password
+            Please enter your new password below
           </Text>
 
-          {/* Email */}
+          {/* New Password */}
           <TextField
-            label="Email"
+            label="New Password"
             required={true}
-            value={email}
+            value={password}
             onChangeText={(text) => {
-              setEmail(text);
-              if (errors.email) {
-                setErrors({ ...errors, email: null });
+              setPassword(text);
+              if (errors.password) {
+                setErrors({ ...errors, password: null });
               }
             }}
-            placeholder="Enter your registered email"
-            leftIcon="email"
-            autoCapitalize="none"
-            keyboardType="email-address"
+            placeholder="Enter your new password"
+            leftIcon="lock"
+            secure={true}
+            returnKeyType="next"
+            error={errors.password}
+          />
+
+          {/* Confirm Password */}
+          <TextField
+            label="Confirm Password"
+            required={true}
+            value={confirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              if (errors.confirmPassword) {
+                setErrors({ ...errors, confirmPassword: null });
+              }
+            }}
+            placeholder="Re-enter your new password"
+            leftIcon="lock"
+            secure={true}
             returnKeyType="done"
-            error={errors.email}
+            error={errors.confirmPassword}
             onSubmitEditing={handleSubmit}
           />
+
+          {/* Password Requirements */}
+          <View style={styles.requirementsContainer}>
+            <Text style={styles.requirementsTitle}>Password must:</Text>
+            <Text style={styles.requirementItem}>• Be at least 8 characters long</Text>
+            <Text style={styles.requirementItem}>• Match in both fields</Text>
+          </View>
 
           {/* Bottom sticky section */}
           <View style={styles.bottomSection}>
             <Button
-              title={loading ? "Sending OTP..." : "Send Verification Code"}
+              title={loading ? "Resetting Password..." : "Reset Password"}
               onPress={handleSubmit}
               variant="primary"
               style={styles.submitButton}
@@ -207,10 +270,28 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     textAlign: 'center',
   },
+  requirementsContainer: {
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.sm,
+  },
+  requirementsTitle: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 13,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  requirementItem: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 12,
+    color: colors.textLight,
+    lineHeight: 18,
+    marginLeft: spacing.xs,
+  },
   bottomSection: {
     paddingHorizontal: spacing.screen.horizontal,
     paddingBottom: spacing.screen.bottom,
-    paddingTop: spacing['3xl'],
+    paddingTop: spacing['2xl'],
     backgroundColor: 'transparent',
   },
   submitButton: {

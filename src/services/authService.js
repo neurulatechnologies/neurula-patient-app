@@ -17,6 +17,7 @@ const STORAGE_KEYS = {
   ACCESS_TOKEN: '@auth_access_token',
   REFRESH_TOKEN: '@auth_refresh_token',
   USER_DATA: '@auth_user_data',
+  REMEMBER_ME: '@auth_remember_me',
 };
 
 // Auth endpoints
@@ -187,6 +188,7 @@ export const clearAuthData = async () => {
       STORAGE_KEYS.ACCESS_TOKEN,
       STORAGE_KEYS.REFRESH_TOKEN,
       STORAGE_KEYS.USER_DATA,
+      STORAGE_KEYS.REMEMBER_ME,
     ]);
     return true;
   } catch (error) {
@@ -221,6 +223,48 @@ export const getUserData = async () => {
   } catch (error) {
     console.error('Error getting user data:', error);
     return null;
+  }
+};
+
+/**
+ * Store remember me preference
+ */
+export const storeRememberMe = async (rememberMe) => {
+  try {
+    await AsyncStorage.setItem(
+      STORAGE_KEYS.REMEMBER_ME,
+      JSON.stringify(rememberMe)
+    );
+    return true;
+  } catch (error) {
+    console.error('Error storing remember me preference:', error);
+    return false;
+  }
+};
+
+/**
+ * Get remember me preference
+ */
+export const getRememberMe = async () => {
+  try {
+    const rememberMe = await AsyncStorage.getItem(STORAGE_KEYS.REMEMBER_ME);
+    return rememberMe ? JSON.parse(rememberMe) : false;
+  } catch (error) {
+    console.error('Error getting remember me preference:', error);
+    return false;
+  }
+};
+
+/**
+ * Clear remember me preference
+ */
+export const clearRememberMe = async () => {
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+    return true;
+  } catch (error) {
+    console.error('Error clearing remember me preference:', error);
+    return false;
   }
 };
 
@@ -296,6 +340,7 @@ export const login = async (identifier, password, rememberMe = false) => {
     const { access_token, refresh_token, user } = response.data;
     await storeTokens(access_token, refresh_token);
     await storeUserData(user);
+    await storeRememberMe(rememberMe);
   }
 
   return response;
@@ -417,6 +462,9 @@ export default {
   clearAuthData,
   storeUserData,
   getUserData,
+  storeRememberMe,
+  getRememberMe,
+  clearRememberMe,
 
   // Auth operations
   register,

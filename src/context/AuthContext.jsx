@@ -33,6 +33,21 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
 
+      // Check remember me preference first
+      const rememberMe = await authService.getRememberMe();
+
+      if (!rememberMe) {
+        // User didn't check remember me - clear everything and require login
+        console.log('Remember me not set - clearing auth data and requiring login');
+        await authService.clearAuthData();
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+
+      // Remember me is true - proceed with auto-login
+      console.log('Remember me is set - attempting auto-login');
+
       // Check if tokens exist
       const accessToken = await authService.getAccessToken();
 
@@ -58,6 +73,8 @@ export const AuthProvider = ({ children }) => {
           }
         }
       } else {
+        // No token found but remember me is set - clear and require login
+        await authService.clearAuthData();
         setIsAuthenticated(false);
       }
     } catch (err) {
