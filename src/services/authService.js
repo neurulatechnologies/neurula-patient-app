@@ -29,6 +29,8 @@ const AUTH_ENDPOINTS = {
   LOGOUT: '/api/v1/auth/logout',
   ME: '/api/v1/auth/me',
   CHANGE_PASSWORD: '/api/v1/auth/change-password',
+  FORGOT_PASSWORD: '/api/v1/auth/forgot-password',
+  RESET_PASSWORD: '/api/v1/auth/reset-password',
 };
 
 /**
@@ -369,6 +371,36 @@ export const changePassword = async (currentPassword, newPassword) => {
 };
 
 /**
+ * Forgot Password - Send OTP to email
+ *
+ * @param {string} email - User's registered email address
+ */
+export const forgotPassword = async (email) => {
+  return await makeRequest(AUTH_ENDPOINTS.FORGOT_PASSWORD, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+};
+
+/**
+ * Reset Password - Verify OTP and set new password
+ *
+ * @param {string} email - User's email address
+ * @param {string} otp - 6-digit OTP code
+ * @param {string} newPassword - New password (minimum 8 characters)
+ */
+export const resetPassword = async (email, otp, newPassword) => {
+  return await makeRequest(AUTH_ENDPOINTS.RESET_PASSWORD, {
+    method: 'POST',
+    body: JSON.stringify({
+      email,
+      otp,
+      new_password: newPassword,
+    }),
+  });
+};
+
+/**
  * Check if user is authenticated (has valid tokens)
  */
 export const isAuthenticated = async () => {
@@ -395,5 +427,7 @@ export default {
   logout,
   getCurrentUser,
   changePassword,
+  forgotPassword,
+  resetPassword,
   isAuthenticated,
 };

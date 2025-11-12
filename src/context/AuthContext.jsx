@@ -241,6 +241,56 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
+   * Forgot Password - Send OTP to email
+   */
+  const forgotPassword = async (email) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await authService.forgotPassword(email);
+
+      if (response.success) {
+        return { success: true, data: response.data };
+      } else {
+        setError(response.error);
+        return { success: false, error: response.error };
+      }
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to send reset code';
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Reset Password - Verify OTP and set new password
+   */
+  const resetPassword = async (email, otp, newPassword) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await authService.resetPassword(email, otp, newPassword);
+
+      if (response.success) {
+        return { success: true, data: response.data };
+      } else {
+        setError(response.error);
+        return { success: false, error: response.error };
+      }
+    } catch (err) {
+      const errorMsg = err.message || 'Password reset failed';
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
    * Clear error state
    */
   const clearError = () => {
@@ -263,6 +313,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     refreshUser,
     changePassword,
+    forgotPassword,
+    resetPassword,
     clearError,
   };
 

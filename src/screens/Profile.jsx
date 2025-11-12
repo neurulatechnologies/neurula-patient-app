@@ -12,6 +12,8 @@ import { useNavigation } from '@react-navigation/native';
 import { colors, spacing } from '../theme';
 import { Button } from '../components';
 import Header from '../components/Header';
+import { useAuth } from '../context/AuthContext';
+import { showSuccessToast, showErrorToast } from '../utils/errorMessages';
 
 const BG_WATERMARK = require('../../assets/background.png');
 const AVATAR = require('../../assets/logo1.png'); // replace with real user avatar when available
@@ -19,6 +21,7 @@ const CHEVRON_RIGHT = require('../../assets/icons/chevron-right.png');
 
 export default function Profile() {
     const navigation = useNavigation();
+    const { logout, loading } = useAuth();
 
     const items = [
         { key: 'medical', label: 'Medical History', icon: '🫀', route: 'MedicalHistory' },
@@ -37,9 +40,31 @@ export default function Profile() {
         }
     };
 
-    const onLogout = () => {
-        // TODO: hook into your auth sign-out
-        // navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+    const onLogout = async () => {
+        try {
+            // Call logout from AuthContext
+            const response = await logout();
+
+            if (response.success) {
+                // Show success toast
+                showSuccessToast('Logged Out', 'You have been successfully logged out');
+
+                // Reset navigation to Login screen
+                setTimeout(() => {
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Login' }],
+                    });
+                }, 500);
+            } else {
+                // Show error toast
+                showErrorToast('Logout Failed', response.error || 'Failed to logout. Please try again.');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Show error toast
+            showErrorToast('Logout Failed', 'An unexpected error occurred. Please try again.');
+        }
     };
 
     return (
@@ -97,11 +122,12 @@ export default function Profile() {
                         ))}
                     </View>
                     <Button
-                        title="Logout"
+                        title={loading ? "Logging out..." : "Logout"}
                         onPress={onLogout}
                         variant="primary"
                         style={styles.logoutBtn}
                         textStyle={styles.logoutText}
+                        disabled={loading}
                     />
                 </View>
 
