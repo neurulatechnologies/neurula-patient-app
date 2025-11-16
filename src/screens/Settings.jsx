@@ -12,6 +12,8 @@ import { useNavigation } from '@react-navigation/native';
 import { colors, spacing } from '../theme';
 import { Button } from '../components';
 import Header from '../components/Header';
+import { useAuth } from '../context/AuthContext';
+import { showSuccessToast, showErrorToast } from '../utils/errorMessages';
 
 const BG_WATERMARK = require('../../assets/background.png');
 const AVATAR = require('../../assets/logo1.png'); // replace with real user avatar when available
@@ -19,6 +21,7 @@ const CHEVRON_RIGHT = require('../../assets/icons/chevron-right.png');
 
 export default function Settings() {
     const navigation = useNavigation();
+    const { user, logout, loading } = useAuth();
 
     const settingsItems = [
         {
@@ -51,10 +54,31 @@ export default function Settings() {
         }
     };
 
-    const onLogout = () => {
-        // TODO: hook into your auth sign-out
-        // navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-        console.log('Logout pressed');
+    const onLogout = async () => {
+        try {
+            // Call logout from AuthContext
+            const response = await logout();
+
+            if (response.success) {
+                // Show success toast
+                showSuccessToast('Logged Out', 'You have been successfully logged out');
+
+                // Reset navigation to Login screen
+                setTimeout(() => {
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Login' }],
+                    });
+                }, 500);
+            } else {
+                // Show error toast
+                showErrorToast('Logout Failed', response.error || 'Failed to logout. Please try again.');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Show error toast
+            showErrorToast('Logout Failed', 'An unexpected error occurred. Please try again.');
+        }
     };
 
     return (
@@ -83,11 +107,14 @@ export default function Settings() {
                     <View style={styles.profileSection}>
                         <View style={styles.avatarWrap}>
                             <View style={styles.avatarRing}>
-                                <Image source={AVATAR} style={styles.avatar} />
+                                <Image
+                                    source={AVATAR}
+                                    style={styles.avatar}
+                                />
                             </View>
                         </View>
-                        <Text style={styles.userName}>James Collins</Text>
-                        <Text style={styles.userEmail}>jamesc@gmail.com</Text>
+                        <Text style={styles.userName}>{user?.full_name || 'User'}</Text>
+                        <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
                     </View>
 
                     {/* Settings Items List */}
@@ -114,11 +141,12 @@ export default function Settings() {
 
                     {/* Logout Button */}
                     <Button
-                        title="Logout"
+                        title={loading ? "Logging out..." : "Logout"}
                         onPress={onLogout}
                         variant="primary"
                         style={styles.logoutBtn}
                         textStyle={styles.logoutText}
+                        disabled={loading}
                     />
                 </View>
             </ScrollView>

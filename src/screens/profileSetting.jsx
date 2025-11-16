@@ -1,5 +1,5 @@
 // File: src/screens/ProfileSettings.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -10,37 +10,150 @@ import {
     Modal,
     TouchableOpacity,
     Alert,
+    ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing } from '../theme';
 import { Button, TextField, FieldDropdown } from '../components';
 import Header from '../components/Header';
+import { useAuth } from '../context/AuthContext';
+import { getPatientProfile, updatePatientProfile, updateUserProfile } from '../services/patientService';
+import { showSuccessToast, showErrorToast } from '../utils/errorMessages';
 
 const BG_WATERMARK = require('../../assets/background.png');
 const AVATAR = require('../../assets/logo1.png');
 
 export default function ProfileSettings() {
     const navigation = useNavigation();
+    const { user, refreshUser, isAuthenticated } = useAuth();
 
     const [formData, setFormData] = useState({
-        fullName: 'James Collins',
-        emiratesId: '000-0000-000000-0',
-        email: 'jamesc@gmail.com',
-        gender: 'Male',
-        dateOfBirth: '1998 / 05 / 05',
-        height: '154',
-        weight: '57',
+        fullName: '',
+        phone: '',
+        emiratesId: '',
+        passportNumber: '',
+        email: '',
+        gender: '',
+        dateOfBirth: '',
+        nationality: '',
+        height: '',
+        weight: '',
+        bloodGroup: '',
+        emirate: '',
+        city: '',
+        address: '',
+        emergencyContactName: '',
+        emergencyContactPhone: '',
+        medicalConditions: '',
+        allergies: '',
+        currentMedications: '',
     });
 
     const [errors, setErrors] = useState({});
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [selectedYear, setSelectedYear] = useState(parseInt(formData.dateOfBirth.split(' / ')[0]) || new Date().getFullYear());
-    const [selectedMonth, setSelectedMonth] = useState(parseInt(formData.dateOfBirth.split(' / ')[1]) || new Date().getMonth() + 1);
-    const [selectedDay, setSelectedDay] = useState(parseInt(formData.dateOfBirth.split(' / ')[2]) || new Date().getDate());
-    const [avatarUri, setAvatarUri] = useState(null);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+    const [selectedDay, setSelectedDay] = useState(new Date().getDate());
+    const [loading, setLoading] = useState(true);
+    const [updating, setUpdating] = useState(false);
 
     const genderOptions = ['Male', 'Female', 'Other'];
+    const bloodGroupOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+    const emirateOptions = [
+        'Abu Dhabi',
+        'Dubai',
+        'Sharjah',
+        'Ajman',
+        'Umm Al Quwain',
+        'Ras Al Khaimah',
+        'Fujairah'
+    ];
+
+    // Fetch user and patient data on mount
+    useEffect(() => {
+        if (isAuthenticated) {
+            loadUserData();
+        }
+    }, [isAuthenticated]);
+
+    const loadUserData = async () => {
+        // Defensive check: Should not happen due to ProtectedRoute, but verify authentication
+        if (!isAuthenticated) {
+            console.warn('ProfileSettings accessed without authentication');
+            setLoading(false);
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            // First, pre-populate form with cached user data for instant UI
+            if (user) {
+                setFormData(prev => ({
+                    ...prev,
+                    fullName: user.full_name || '',
+                    phone: user.phone || '',
+                    email: user.email || '',
+                }));
+            }
+
+            // Then fetch fresh patient profile data
+            const patientData = await getPatientProfile();
+
+            // Format date of birth
+            let formattedDob = '';
+            if (patientData.date_of_birth) {
+                const dobParts = patientData.date_of_birth.split('-');
+                if (dobParts.length === 3) {
+                    formattedDob = `${dobParts[0]} / ${dobParts[1]} / ${dobParts[2]}`;
+                    setSelectedYear(parseInt(dobParts[0]));
+                    setSelectedMonth(parseInt(dobParts[1]));
+                    setSelectedDay(parseInt(dobParts[2]));
+                } else {
+                    formattedDob = patientData.date_of_birth;
+                }
+            }
+
+            // Populate form with complete patient data
+            setFormData({
+                fullName: user?.full_name || '',
+                phone: user?.phone || '',
+                emiratesId: patientData.emirates_id || '',
+                passportNumber: patientData.passport_number || '',
+                email: user?.email || '',
+                gender: patientData.gender || '',
+                dateOfBirth: formattedDob,
+                nationality: patientData.nationality || '',
+                height: patientData.height?.toString() || '',
+                weight: patientData.weight?.toString() || '',
+                bloodGroup: patientData.blood_group || '',
+                emirate: patientData.emirate || '',
+                city: patientData.city || '',
+                address: patientData.address || '',
+                emergencyContactName: patientData.emergency_contact_name || '',
+                emergencyContactPhone: patientData.emergency_contact_phone || '',
+                medicalConditions: patientData.medical_conditions || '',
+                allergies: patientData.allergies || '',
+                currentMedications: patientData.current_medications || '',
+            });
+
+        } catch (error) {
+            console.error('Failed to load user data:', error);
+
+            // Check if error is authentication-related
+            if (error.message && error.message.includes('No access token')) {
+                Alert.alert(
+                    'Session Expired',
+                    'Please log in again to continue.',
+                    [{ text: 'OK' }]
+                );
+            } else {
+                Alert.alert('Error', 'Failed to load profile data. Please try again.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Validation helper functions
     const validateEmail = (email) => {
@@ -57,10 +170,21 @@ export default function ProfileSettings() {
     const validateEmiratesId = (id) => {
         // Emirates ID is optional, but if provided must be valid
         if (id && id.trim() !== '') {
-            const emiratesIdRegex = /^784\d{12}$/;
-            if (!emiratesIdRegex.test(id)) {
+            const cleanId = id.replace(/-/g, '');
+            if (!cleanId.startsWith('784') || cleanId.length !== 15 || !/^\d+$/.test(cleanId)) {
                 return 'Emirates ID must start with 784 and be 15 digits total';
             }
+        }
+        return null;
+    };
+
+    const validatePhone = (phone) => {
+        if (!phone || phone.trim() === '') {
+            return 'Phone number is required';
+        }
+        const phoneRegex = /^\+971\d{9}$/;
+        if (!phoneRegex.test(phone)) {
+            return 'Phone must be in format +971XXXXXXXXX';
         }
         return null;
     };
@@ -88,7 +212,7 @@ export default function ProfileSettings() {
 
     const validateHeight = (height) => {
         if (!height || height.trim() === '') {
-            return 'Height is required';
+            return null; // Optional
         }
         const heightNum = parseFloat(height);
         if (isNaN(heightNum)) {
@@ -102,7 +226,7 @@ export default function ProfileSettings() {
 
     const validateWeight = (weight) => {
         if (!weight || weight.trim() === '') {
-            return 'Weight is required';
+            return null; // Optional
         }
         const weightNum = parseFloat(weight);
         if (isNaN(weightNum)) {
@@ -126,6 +250,9 @@ export default function ProfileSettings() {
 
         const fullNameError = validateFullName(formData.fullName);
         if (fullNameError) newErrors.fullName = fullNameError;
+
+        const phoneError = validatePhone(formData.phone);
+        if (phoneError) newErrors.phone = phoneError;
 
         const emiratesIdError = validateEmiratesId(formData.emiratesId);
         if (emiratesIdError) newErrors.emiratesId = emiratesIdError;
@@ -187,106 +314,79 @@ export default function ProfileSettings() {
         setShowDatePicker(false);
     };
 
-    const onUpdate = () => {
-        if (validateForm()) {
-            // All validations passed
-            console.log('Update profile:', formData);
-            // TODO: Implement actual update profile logic
-        } else {
+    const onUpdate = async () => {
+        if (!validateForm()) {
             console.log('Validation failed:', errors);
+            Alert.alert('Validation Error', 'Please fix the errors in the form');
+            return;
         }
-    };
-
-    // Image picker functions
-    const requestCameraPermission = async () => {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert(
-                'Permission Denied',
-                'Camera permission is required to take photos. Please enable it in your device settings.',
-                [{ text: 'OK' }]
-            );
-            return false;
-        }
-        return true;
-    };
-
-    const requestGalleryPermission = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert(
-                'Permission Denied',
-                'Gallery permission is required to select photos. Please enable it in your device settings.',
-                [{ text: 'OK' }]
-            );
-            return false;
-        }
-        return true;
-    };
-
-    const handleTakePhoto = async () => {
-        const hasPermission = await requestCameraPermission();
-        if (!hasPermission) return;
 
         try {
-            const result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ['images'],
-                allowsEditing: true,
-                aspect: [1, 1],
-                quality: 0.8,
-            });
+            setUpdating(true);
 
-            if (!result.canceled && result.assets && result.assets.length > 0) {
-                setAvatarUri(result.assets[0].uri);
-            }
+            // Convert date format from YYYY / MM / DD to YYYY-MM-DD
+            const dobParts = formData.dateOfBirth.split('/').map(p => p.trim());
+            const formattedDob = `${dobParts[0]}-${dobParts[1]}-${dobParts[2]}`;
+
+            // Prepare user data (name, phone)
+            const userData = {
+                full_name: formData.fullName,
+                phone: formData.phone,
+            };
+
+            // Prepare patient data
+            const patientData = {
+                date_of_birth: formattedDob,
+                gender: formData.gender,
+                nationality: formData.nationality || null,
+                emirates_id: formData.emiratesId || null,
+                passport_number: formData.passportNumber || null,
+                height: formData.height ? parseFloat(formData.height) : null,
+                weight: formData.weight ? parseFloat(formData.weight) : null,
+                blood_group: formData.bloodGroup || null,
+                emirate: formData.emirate || null,
+                city: formData.city || null,
+                address: formData.address || null,
+                emergency_contact_name: formData.emergencyContactName || null,
+                emergency_contact_phone: formData.emergencyContactPhone || null,
+                medical_conditions: formData.medicalConditions || null,
+                allergies: formData.allergies || null,
+                current_medications: formData.currentMedications || null,
+            };
+
+            console.log('Updating user profile with data:', userData);
+            console.log('Updating patient profile with data:', patientData);
+
+            // Update both User and Patient profiles
+            await updateUserProfile(userData);
+            await updatePatientProfile(patientData);
+
+            // Refresh user context
+            await refreshUser();
+
+            // Show success toast and navigate back
+            showSuccessToast('Success', 'Profile updated successfully!');
+            setTimeout(() => {
+                navigation.goBack();
+            }, 1500);
+
         } catch (error) {
-            console.error('Error taking photo:', error);
-            Alert.alert('Error', 'Failed to take photo. Please try again.');
+            console.error('Update profile error:', error);
+            Alert.alert('Error', error.message || 'Failed to update profile. Please try again.');
+        } finally {
+            setUpdating(false);
         }
     };
 
-    const handleChooseFromGallery = async () => {
-        const hasPermission = await requestGalleryPermission();
-        if (!hasPermission) return;
 
-        try {
-            const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ['images'],
-                allowsEditing: true,
-                aspect: [1, 1],
-                quality: 0.8,
-            });
-
-            if (!result.canceled && result.assets && result.assets.length > 0) {
-                setAvatarUri(result.assets[0].uri);
-            }
-        } catch (error) {
-            console.error('Error selecting photo:', error);
-            Alert.alert('Error', 'Failed to select photo. Please try again.');
-        }
-    };
-
-    const onEditAvatar = () => {
-        Alert.alert(
-            'Change Profile Picture',
-            'Choose an option',
-            [
-                {
-                    text: 'Take Photo',
-                    onPress: handleTakePhoto,
-                },
-                {
-                    text: 'Choose from Gallery',
-                    onPress: handleChooseFromGallery,
-                },
-                {
-                    text: 'Cancel',
-                    style: 'cancel',
-                },
-            ],
-            { cancelable: true }
+    if (loading) {
+        return (
+            <View style={[styles.container, styles.centerContent]}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={styles.loadingText}>Loading profile...</Text>
+            </View>
         );
-    };
+    }
 
     return (
         <View style={styles.container}>
@@ -310,18 +410,15 @@ export default function ProfileSettings() {
             >
                 {/* Main Parent Card */}
                 <View style={styles.mainCard}>
-                    {/* Profile Avatar with Edit Button */}
+                    {/* Profile Avatar */}
                     <View style={styles.avatarSection}>
                         <View style={styles.avatarWrap}>
                             <View style={styles.avatarRing}>
                                 <Image
-                                    source={avatarUri ? { uri: avatarUri } : AVATAR}
+                                    source={AVATAR}
                                     style={styles.avatar}
                                 />
                             </View>
-                            <Pressable style={styles.editIconButton} onPress={onEditAvatar}>
-                                <Text style={styles.editIcon}>✏️</Text>
-                            </Pressable>
                         </View>
                     </View>
 
@@ -336,27 +433,49 @@ export default function ProfileSettings() {
                             error={errors.fullName}
                         />
 
-                        {/* Emirates ID/Passport Number */}
+                        {/* Phone */}
                         <TextField
-                            label="Emirates ID/Passport Number"
-                            value={formData.emiratesId}
-                            onChangeText={(text) => updateField('emiratesId', text)}
-                            placeholder="784XXXXXXXXXXXX"
-                            keyboardType="numeric"
-                            helperText="Must start with 784 and be 15 digits total"
-                            error={errors.emiratesId}
+                            label="Phone"
+                            value={formData.phone}
+                            onChangeText={(text) => updateField('phone', text)}
+                            placeholder="+971XXXXXXXXX"
+                            keyboardType="phone-pad"
+                            helperText="Format: +971XXXXXXXXX"
+                            error={errors.phone}
                         />
 
-                        {/* Email */}
+                        {/* Email (Read-only) */}
                         <TextField
                             label="Email"
                             value={formData.email}
-                            onChangeText={(text) => updateField('email', text)}
                             placeholder="Enter your email"
                             keyboardType="email-address"
                             autoCapitalize="none"
                             leftIcon="email"
                             error={errors.email}
+                            editable={false}
+                            style={styles.readOnlyField}
+                        />
+
+                        {/* Emirates ID/Passport Number (Read-only) */}
+                        <TextField
+                            label="Emirates ID"
+                            value={formData.emiratesId}
+                            placeholder="784XXXXXXXXXXXX"
+                            keyboardType="numeric"
+                            helperText="Must start with 784 and be 15 digits total"
+                            error={errors.emiratesId}
+                            editable={false}
+                            style={styles.readOnlyField}
+                        />
+
+                        {/* Passport Number */}
+                        <TextField
+                            label="Passport Number"
+                            value={formData.passportNumber}
+                            onChangeText={(text) => updateField('passportNumber', text)}
+                            placeholder="Enter passport number"
+                            autoCapitalize="characters"
                         />
 
                         {/* Gender Dropdown */}
@@ -484,6 +603,14 @@ export default function ProfileSettings() {
                             </Modal>
                         </View>
 
+                        {/* Nationality */}
+                        <TextField
+                            label="Nationality"
+                            value={formData.nationality}
+                            onChangeText={(text) => updateField('nationality', text)}
+                            placeholder="Enter nationality"
+                        />
+
                         {/* Height and Weight - Side by Side */}
                         <View style={styles.rowInputs}>
                             <View style={styles.halfWidth}>
@@ -508,15 +635,101 @@ export default function ProfileSettings() {
                                 />
                             </View>
                         </View>
+
+                        {/* Blood Group */}
+                        <FieldDropdown
+                            label="Blood Group"
+                            value={formData.bloodGroup}
+                            onValueChange={(value) => updateField('bloodGroup', value)}
+                            options={bloodGroupOptions}
+                            placeholder="Select blood group"
+                        />
+
+                        {/* Emirates and City - Side by Side */}
+                        <View style={styles.rowInputs}>
+                            <View style={styles.halfWidth}>
+                                <FieldDropdown
+                                    label="Emirate"
+                                    value={formData.emirate}
+                                    onValueChange={(value) => updateField('emirate', value)}
+                                    options={emirateOptions}
+                                    placeholder="Select emirate"
+                                />
+                            </View>
+
+                            <View style={styles.halfWidth}>
+                                <TextField
+                                    label="City"
+                                    value={formData.city}
+                                    onChangeText={(text) => updateField('city', text)}
+                                    placeholder="Enter city"
+                                />
+                            </View>
+                        </View>
+
+                        {/* Address */}
+                        <TextField
+                            label="Address"
+                            value={formData.address}
+                            onChangeText={(text) => updateField('address', text)}
+                            placeholder="Enter full address"
+                            multiline
+                        />
+
+                        {/* Emergency Contact */}
+                        <Text style={styles.sectionTitle}>Emergency Contact</Text>
+
+                        <TextField
+                            label="Emergency Contact Name"
+                            value={formData.emergencyContactName}
+                            onChangeText={(text) => updateField('emergencyContactName', text)}
+                            placeholder="Enter contact name"
+                        />
+
+                        <TextField
+                            label="Emergency Contact Phone"
+                            value={formData.emergencyContactPhone}
+                            onChangeText={(text) => updateField('emergencyContactPhone', text)}
+                            placeholder="+971XXXXXXXXX"
+                            keyboardType="phone-pad"
+                        />
+
+                        {/* Medical Information */}
+                        <Text style={styles.sectionTitle}>Medical Information</Text>
+
+                        <TextField
+                            label="Medical Conditions"
+                            value={formData.medicalConditions}
+                            onChangeText={(text) => updateField('medicalConditions', text)}
+                            placeholder="Enter any medical conditions"
+                            multiline
+                        />
+
+                        <TextField
+                            label="Allergies"
+                            value={formData.allergies}
+                            onChangeText={(text) => updateField('allergies', text)}
+                            placeholder="Enter any allergies"
+                            multiline
+                        />
+
+                        <TextField
+                            label="Current Medications"
+                            value={formData.currentMedications}
+                            onChangeText={(text) => updateField('currentMedications', text)}
+                            placeholder="Enter current medications"
+                            multiline
+                        />
                     </View>
 
                     {/* Update Button */}
                     <Button
-                        title="Update"
+                        title={updating ? "Updating..." : "Update"}
                         onPress={onUpdate}
                         variant="primary"
                         style={styles.updateBtn}
                         textStyle={styles.updateText}
+                        disabled={updating}
                     />
                 </View>
             </ScrollView>
@@ -528,6 +741,16 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.background
+    },
+    centerContent: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: spacing.md,
+        fontFamily: 'Poppins_400Regular',
+        fontSize: 16,
+        color: colors.text,
     },
     watermark: {
         position: 'absolute',
@@ -584,6 +807,17 @@ const styles = StyleSheet.create({
         borderRadius: 52,
         backgroundColor: '#fff',
     },
+    uploadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 52,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     editIconButton: {
         position: 'absolute',
         right: 0,
@@ -609,6 +843,19 @@ const styles = StyleSheet.create({
     // Form Section
     formSection: {
         gap: spacing.sm,
+    },
+
+    sectionTitle: {
+        fontFamily: 'Poppins_600SemiBold',
+        fontSize: 16,
+        color: colors.text,
+        marginTop: spacing.md,
+        marginBottom: spacing.xs,
+    },
+
+    readOnlyField: {
+        backgroundColor: '#F3F4F6',
+        opacity: 0.7,
     },
 
     // Row Inputs (Height & Weight)

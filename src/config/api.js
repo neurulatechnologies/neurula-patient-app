@@ -38,6 +38,10 @@ export const API_CONFIG = {
         AUTH_LOGOUT: '/api/v1/auth/logout',
         AUTH_ME: '/api/v1/auth/me',
         AUTH_CHANGE_PASSWORD: '/api/v1/auth/change-password',
+
+        // Patient endpoints
+        PATIENT_ME: '/api/v1/patients/me',
+        PATIENT_UPDATE: '/api/v1/patients/me',
     },
 };
 

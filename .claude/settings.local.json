@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ipconfig:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command \"Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_IPAddress -like ''192.168.*''} | Select-Object IPAddress, InterfaceAlias | Format-Table\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

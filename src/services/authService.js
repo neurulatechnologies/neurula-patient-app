@@ -337,7 +337,8 @@ export const login = async (identifier, password, rememberMe = false) => {
 
   // Store tokens if login successful
   if (response.success && response.data) {
-    const { access_token, refresh_token, user } = response.data;
+    const { tokens, user } = response.data;
+    const { access_token, refresh_token } = tokens;
     await storeTokens(access_token, refresh_token);
     await storeUserData(user);
     await storeRememberMe(rememberMe);
@@ -368,7 +369,8 @@ export const refreshAccessToken = async () => {
 
   // Store new access token if refresh successful
   if (response.success && response.data) {
-    const { access_token } = response.data;
+    // Handle both nested tokens object and flat structure
+    const { access_token } = response.data.tokens || response.data;
     await AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, access_token);
   }
 

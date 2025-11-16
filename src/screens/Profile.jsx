@@ -21,7 +21,7 @@ const CHEVRON_RIGHT = require('../../assets/icons/chevron-right.png');
 
 export default function Profile() {
     const navigation = useNavigation();
-    const { logout, loading } = useAuth();
+    const { user, logout, loading } = useAuth();
 
     const items = [
         { key: 'medical', label: 'Medical History', icon: '🫀', route: 'MedicalHistory' },
@@ -93,11 +93,14 @@ export default function Profile() {
                     <View style={styles.profileSection}>
                         <View style={styles.avatarWrap}>
                             <View style={styles.avatarRing}>
-                                <Image source={AVATAR} style={styles.avatar} />
+                                <Image
+                                    source={AVATAR}
+                                    style={styles.avatar}
+                                />
                             </View>
                         </View>
-                        <Text style={styles.userName}>James Collins</Text>
-                        <Text style={styles.userEmail}>jamesc@gmail.com</Text>
+                        <Text style={styles.userName}>{user?.full_name || 'User'}</Text>
+                        <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
                     </View>
 
                     {/* Menu Items List */}
